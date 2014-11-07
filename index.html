@@ -1,11 +1,63 @@
 ---
+title: 首页
 ---
-Davidaq Blog
-<ul>
-  {% for post in site.posts %}
-      <li>
-        <a href="{{ post.url }}">{{ post.title }}</a>
-          {{ post.excerpt }}
-      </li>
-    {% endfor %}
-</ul>
+<!doctype html>
+<html class="js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{site.sitename}} | {{page.title}}</title>
+    <link rel="stylesheet" href="static/css/foundation.css" />
+    <script src="static/js/vendor/modernizr.js"></script>
+    <script src="static/js/vendor/jquery.js"></script>
+    <script src="static/js/vendor/fastclick.js"></script>
+    <script src="static/js/foundation.min.js"></script>
+  </head>
+  <body>
+    <nav class="top-bar" data-topbar role="navigation">
+      <ul class="title-area">
+        <li class="name">
+          <h1><a href="/">{{site.sitename}}</a></h1>
+        </li>
+        <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
+      </ul>
+      <section class="top-bar-section">
+        <ul class="left">
+          <li class="has-form">
+            <div class="row collapse">
+              <div class="large-8 small-9 columns">
+                <input type="text" placeholder="找点什么。。。">
+              </div>
+              <div class="large-4 small-3 columns">
+                <a href="#" class="alert button expand">搜索</a>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <ul class="right">
+          <li class="active has-dropdown not-click">
+            <a href="/">博文</a>
+            <ul class="dropdown">
+              <li><label>分类</label></li>
+              <li><a href="/technique">技术心得</a></li>
+              <li><a href="/share">趣味分享</a></li>
+              <li><a href="/tutorial">教程说明</a></li>
+              <li><a href="/mood">生活心情</a></li>
+            </ul>
+          </li>
+          <li><a href="/collections">个人收藏</a></li>
+          <li><a href="/resume">我的简历</a></li>
+        </ul>
+      </section>
+    </nav>
+
+    <ul>
+      {% for post in site.posts %}
+        <li>
+          <a href="{{ post.url }}">{{ post.title }}</a>
+            {{ post.excerpt }}
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
