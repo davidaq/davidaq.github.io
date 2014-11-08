@@ -12,7 +12,7 @@
     <script src="/static/js/foundation.min.js"></script>
     <script type="text/javascript">
       function paddBottom() {
-        var d = $(window).height() - $('.inner-wrap').height();
+        var d = $(window).height() - $('.inner-wrap').height() + $('.main-padding').height();
         if(d < 0) {
           d = 0;
         }
