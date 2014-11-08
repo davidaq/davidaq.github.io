@@ -6,7 +6,7 @@
   background: url(../img/logo.png) no-repeat center right;
 }
 .off-canvas-wrap, .inner-wrap {
-  height: 100%;
+  min-height: 100%;
 }
 .main-body {
   padding: 10px;
