@@ -62,7 +62,7 @@
     <div class="main-body row">
       <div class="column large-9 medium-8">
         <!-- Article List [ -->
-        {% if page.category != null %>
+        {% if page.category != null %}
           {% assign showposts = site.posts | where "category",page.category %}
         {% else %}
           {% assign showposts = site.posts %}
