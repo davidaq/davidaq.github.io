@@ -1,126 +1,44 @@
-<!doctype html>
-<html class="js">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{site.sitename}} | {{page.title}}</title>
-    <link rel="stylesheet" href="/static/css/foundation.min.css" />
-    <link rel="stylesheet" href="/static/css/style.css" />
-    <script src="/static/js/vendor/modernizr.js"></script>
-    <script src="/static/js/vendor/jquery.js"></script>
-    <script src="/static/js/vendor/fastclick.js"></script>
-    <script src="/static/js/foundation.min.js"></script>
-    <script type="text/javascript">
-      function totop() {
-        var interval = setInterval(function() {
-          if($(window).scrollTop() < 5) {
-            $(window).scrollTop(0);
-            clearTimeout(interval);
-          } else 
-            $(window).scrollTop($(window).scrollTop() / 2);
-        }, 40);
-      }
-    </script>
-  </head>
-  <body>
-    <!-- Top Bar [ -->
-    <nav class="top-bar" data-topbar role="navigation">
-      <ul class="title-area">
-        <li class="name">
-          <h1><a href="/">{{site.sitename}}</a></h1>
-        </li>
-        <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
-      </ul>
-      <section class="top-bar-section">
-        <ul class="right">
-          <li class="active has-dropdown not-click">
-            <a href="/">博文</a>
-            <ul class="dropdown">
-              <li><label>分类</label></li>
-              <li><a href="/technique.html">技术心得</a></li>
-              <li><a href="/share.html">趣味分享</a></li>
-              <li><a href="/tutorial.html">教程说明</a></li>
-              <li><a href="/mood.html">生活心情</a></li>
-            </ul>
-          </li>
-          <li><a href="/collections.html">收藏夹</a></li>
-          <li><a href="/resume.html">我的简历</a></li>
-          <li class="has-form">
-            <div class="row collapse">
-              <div class="large-8 small-9 columns">
-                <input type="text">
-              </div>
-              <div class="large-4 small-3 columns">
-                <a href="#" class="success button expand">搜索</a>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </section>
-    </nav>
-    <!-- ] Top Bar -->
-    <div class="main-body row">
-      <div class="column large-9 medium-8">
-        <!-- Article List [ -->
-        {% for post in site.posts %}
+{% include header.html %}
+  <div class="main-body row">
+    <div class="column large-9 medium-8">
+      <!-- Article List [ -->
+      {% for post in site.posts %}
         {% if page.category == null or post.category contains page.category %}
-        <div class="article">
-          <div class="clearfix">
-            <div class="date left hide-for-small">
-              <small class="month">{{ post.date | date: "%m" }}</small>
-              <small class="year">{{ post.date | date: "%Y" }}</small>
-              <div class="day">{{ post.date | date: "%-d" }}</div>
-            </div>
-            <div class="content left large-10 medium-9 small-12">
-              <h1>
-                {{ post.title }}
-                <small>
-                  <span class="show-for-small-only"><br/>{{ post.date | date: "%Y年%m月%d日" }}</span>
-                  &raquo; <a href="{{ post.url }}">全文</a>
-                </small>
-              </h1>
-              <div>{{ post.excerpt }}</div>
+          <div class="article">
+            <div class="clearfix">
+              <div class="date left hide-for-small">
+                <small class="month">{{ post.date | date: "%m" }}</small>
+                <small class="year">{{ post.date | date: "%Y" }}</small>
+                <div class="day">{{ post.date | date: "%-d" }}</div>
+              </div>
+              <div class="content left large-10 medium-9 small-12">
+                <h1>
+                  {{ post.title }}
+                  <small>
+                    <span class="show-for-small-only">
+                      <br/>{{ post.date | date: "%Y年%m月%d日" }}
+                    </span>
+                    &raquo; <a href="{{ post.url }}">全文</a>
+                  </small>
+                </h1>
+                <div>{{ post.excerpt }}</div>
+              </div>
             </div>
           </div>
-        </div>
         {% endif %}
-        {% endfor %}
-        <!-- ] Article List -->
-      </div>
-      <!-- Right Side Bar [ -->
-      <div class="column large-3 medium-4 small-12">
-        <div class="thoughts">
-          <h3>我在想……</h3>
-          <p>{{ content }}</p>
-        </div>
-        <div class="panel">
-          <a href="/guestbook" class="button small expand">给我个留言</a>
-        </div>
-      </div>
-      <!-- ] Right Side Bar -->
+      {% endfor %}
+      <!-- ] Article List -->
     </div>
-    <div class="footer">
-      <div class="row">
-        <div class="column small-12 medium-5">
-          <a class="sponsor" href="/">{{site.sitename}}</a>
-          <br/><br/>
-          一个喜好重造轮子的家伙的一己之谈
-        </div>
-        <div class="column small-12 medium-5 small-text-left medium-text-right">
-          基于
-          <a class="sponsor" target="_blank" href="http://foundation.zurb.com">Foundation</a>
-          的前端
-          <br/>
-          <a class="sponsor" target="_blank" href="http://jekyllrb.com">Jekyll</a>
-          后台驱动
-          <br/>
-          自豪地部署于
-          <a class="sponsor" target="_blank" href="https://github.com">GitHub</a>
-        </div>
-        <div class="column medium-2">
-          <a href="javascript:totop();" class="button success expand">回到顶部</a>
-        </div>
+    <!-- Right Side Bar [ -->
+    <div class="column large-3 medium-4 small-12">
+      <div class="thoughts">
+        <h3>我在想……</h3>
+        <p>{{ content }}</p>
+      </div>
+      <div class="panel">
+        <a href="/guestbook" class="button small expand">给我个留言</a>
       </div>
     </div>
-  </body>
-</html>
+    <!-- ] Right Side Bar -->
+  </div>
+{% include footer.html %}

@@ -1,1 +1,25 @@
-{{ content }}
+{% include header.html %}
+  <div class="main-body row">
+    <div class="article">
+      <div class="clearfix">
+        <div class="date left hide-for-small">
+          <small class="month">{{ page.date | date: "%m" }}</small>
+          <small class="year">{{ page.date | date: "%Y" }}</small>
+          <div class="day">{{ page.date | date: "%-d" }}</div>
+        </div>
+        <div class="content left large-10 medium-9 small-12">
+          <h1>
+            {{ page.title }}
+            <small>
+              <span class="show-for-small-only">
+                <br/>{{ page.date | date: "%Y年%m月%d日" }}
+              </span>
+              &raquo; <a href="{{ post.url }}">全文</a>
+            </small>
+          </h1>
+          <div>{{ content }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% include header.html %}
