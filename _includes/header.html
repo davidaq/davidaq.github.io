@@ -20,6 +20,18 @@
             $(window).scrollTop($(window).scrollTop() / 2);
         }, 40);
       }
+      $(function() {
+        var activeMenu = '';
+        {% for category in page.category %}
+          activeMenu += ',.cat-{{ category }}';
+        {% endfor %}
+        if(activeMenu.length > 1) {
+          activeMenu = activeMenu.substr(1);
+          $(activeMenu).each(function() {
+            $(this).closest('li').addClass('active');
+          });
+        }
+      });
     </script>
   </head>
   <body>
@@ -33,14 +45,16 @@
       </ul>
       <section class="top-bar-section">
         <ul class="right">
-          <li class="active has-dropdown not-click">
-            <a href="/">博文</a>
+          <li class="has-dropdown not-click">
+            <a class="cat-technique cat-share cat-tutorial cat-mood" href="/">
+              博文
+            </a>
             <ul class="dropdown">
               <li><label>分类</label></li>
-              <li><a href="/technique.html">技术心得</a></li>
-              <li><a href="/share.html">趣味分享</a></li>
-              <li><a href="/tutorial.html">教程说明</a></li>
-              <li><a href="/mood.html">生活心情</a></li>
+              <li><a class="cat-technique" href="/technique.html">技术心得</a></li>
+              <li><a class="cat-share" href="/share.html">趣味分享</a></li>
+              <li><a class="cat-tutorial" href="/tutorial.html">教程说明</a></li>
+              <li><a class="cat-mood" href="/mood.html">生活心情</a></li>
             </ul>
           </li>
           <li><a href="/collections.html">收藏夹</a></li>
