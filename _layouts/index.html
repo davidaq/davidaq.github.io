@@ -63,6 +63,7 @@
       <div class="column large-9 medium-8">
         <!-- Article List [ -->
         {% for post in site.posts %}
+        {% if page.category != null or post.category contains page.category %}
         <div class="article">
           <div class="clearfix">
             <div class="date left hide-for-small">
@@ -82,6 +83,7 @@
             </div>
           </div>
         </div>
+        {% endif %}
         {% endfor %}
         <!-- ] Article List -->
       </div>
