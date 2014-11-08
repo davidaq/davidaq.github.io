@@ -2,6 +2,9 @@
   background: url(../img/logo.png) no-repeat;
   padding-left: 35px;
 }
+.tab-bar .bg {
+  background: url(../img/logo.png) no-repeat center right;
+}
 .main-body {
   padding: 10px;
   min-height: 85%;
@@ -38,6 +41,9 @@
   padding-bottom: 15px;
   margin-bottom: 20px;
   border-bottom: 1px solid #DDD;
+}
+.article p {
+  text-indent: 2em;
 }
 .thoughts {
   margin: 20px 0 30px 0;

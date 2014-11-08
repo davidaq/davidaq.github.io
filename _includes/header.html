@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="js">
+<html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,6 +11,9 @@
     <script src="/static/js/vendor/fastclick.js"></script>
     <script src="/static/js/foundation.min.js"></script>
     <script type="text/javascript">
+      $(window).bind("load", function() {
+        $(document).foundation();
+      });
       function totop() {
         var interval = setInterval(function() {
           if($(window).scrollTop() < 5) {
@@ -20,56 +23,98 @@
             $(window).scrollTop($(window).scrollTop() / 2);
         }, 40);
       }
-      $(function() {
-        var activeMenu = '';
-        {% for category in page.category %}
-          activeMenu += ',.cat-{{ category }}';
-        {% endfor %}
-        if(activeMenu.length > 1) {
-          activeMenu = activeMenu.substr(1);
-          $(activeMenu).each(function() {
-            $(this).closest('li').addClass('active');
-          });
-        }
-      });
     </script>
+    {% if page.category != null %}
+      <script type="text/javascript">
+        $(function() {
+          var activeMenu = '';
+          {% for category in page.category %}
+            activeMenu += ',.cat-{{ category }}';
+          {% endfor %}
+          if(activeMenu.length > 1) {
+            activeMenu = activeMenu.substr(1);
+            $(activeMenu).each(function() {
+              $(this).closest('li').addClass('active');
+            });
+          }
+        });
+      </script>
+    {% endif %}
   </head>
   <body>
-    <!-- Top Bar [ -->
-    <nav class="top-bar" data-topbar role="navigation">
-      <ul class="title-area">
-        <li class="name">
-          <h1><a href="/">{{site.sitename}}</a></h1>
-        </li>
-        <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
-      </ul>
-      <section class="top-bar-section">
-        <ul class="right">
-          <li class="has-dropdown not-click">
-            <a class="cat-technique cat-share cat-tutorial cat-mood" href="/">
-              博文
-            </a>
-            <ul class="dropdown">
-              <li><label>分类</label></li>
-              <li><a class="cat-technique" href="/technique.html">技术心得</a></li>
-              <li><a class="cat-share" href="/share.html">趣味分享</a></li>
-              <li><a class="cat-tutorial" href="/tutorial.html">教程说明</a></li>
-              <li><a class="cat-mood" href="/mood.html">生活心情</a></li>
+    <div class="off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+        <!-- Top Bar Large [ -->
+        <nav class="top-bar hide-for-small" data-topbar role="navigation">
+          <ul class="title-area">
+            <li class="name">
+              <h1><a href="/">{{site.sitename}}</a></h1>
+            </li>
+          </ul>
+          <section class="top-bar-section">
+            <ul class="right">
+              <li class="has-dropdown not-click">
+                <a class="cat-technique cat-share cat-tutorial cat-mood" href="/">
+                  博文
+                </a>
+                <ul class="dropdown">
+                  <li><label>分类</label></li>
+                  <li><a class="cat-technique" href="/technique.html">技术心得</a></li>
+                  <li><a class="cat-share" href="/share.html">趣味分享</a></li>
+                  <li><a class="cat-tutorial" href="/tutorial.html">教程说明</a></li>
+                  <li><a class="cat-mood" href="/mood.html">生活心情</a></li>
+                </ul>
+              </li>
+              <li><a href="/collections.html">收藏夹</a></li>
+              <li><a href="/resume.html">我的简历</a></li>
+              <li class="has-form">
+                <div class="row collapse">
+                  <div class="large-8 small-9 columns">
+                    <input type="text">
+                  </div>
+                  <div class="large-4 small-3 columns">
+                    <a href="#" class="success button expand">搜索</a>
+                  </div>
+                </div>
+              </li>
             </ul>
-          </li>
-          <li><a href="/collections.html">收藏夹</a></li>
-          <li><a href="/resume.html">我的简历</a></li>
-          <li class="has-form">
-            <div class="row collapse">
-              <div class="large-8 small-9 columns">
-                <input type="text">
+          </section>
+        </nav>
+        <!-- ] Top Bar Large -->
+        <!-- Top Bar Small [ -->
+        <nav class="tab-bar show-for-small-only" data-topbar role="navigation">
+          <div class="bg">
+            <a href="#" class="left-off-canvas-toggle menu-icon">
+              <span>&nbsp;{{site.sitename}}</span>
+            </a>
+          </div>
+        </nav>
+        <aside class="left-off-canvas-menu">
+          <ul class="off-canvas-list">
+            <li><label>{{ site.sitename }}</label></li>
+            <li class="has-dropdown not-click">
+              <a class="cat-technique cat-share cat-tutorial cat-mood" href="/">
+                博文
+              </a>
+            </li>
+            <li><label>博文分类</label></li>
+            <li><a class="cat-technique" href="/technique.html">技术心得</a></li>
+            <li><a class="cat-share" href="/share.html">趣味分享</a></li>
+            <li><a class="cat-tutorial" href="/tutorial.html">教程说明</a></li>
+            <li><a class="cat-mood" href="/mood.html">生活心情</a></li>
+            <li><label>其他</label></li>
+            <li><a href="/collections.html">收藏夹</a></li>
+            <li><a href="/resume.html">我的简历</a></li>
+            <li class="has-form">
+              <div class="row collapse">
+                <div class="large-8 small-9 columns">
+                  <input type="text" style="height:40px;">
+                </div>
+                <div class="large-4 small-3 columns">
+                  <a href="#" class="success button expand">搜索</a>
+                </div>
               </div>
-              <div class="large-4 small-3 columns">
-                <a href="#" class="success button expand">搜索</a>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </section>
-    </nav>
-    <!-- ] Top Bar -->
+            </li>
+          </ul>
+        </aside>
+        <!-- ] Top Bar Small -->
