@@ -5,6 +5,9 @@
 .tab-bar .bg {
   background: url(../img/logo.png) no-repeat center right;
 }
+.off-canvas-wrap, .inner-wrap {
+  height: 100%;
+}
 .main-body {
   padding: 10px;
   min-height: 85%;
