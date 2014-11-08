@@ -13,6 +13,11 @@
     <script type="text/javascript">
       $(window).bind("load", function() {
         $(document).foundation();
+        var d = $(window).height() - $(document).height();
+        if(d < 0) {
+          d = 0;
+        }
+        $('.main-padding').css('height', d);
       });
       function totop() {
         var interval = setInterval(function() {
@@ -27,11 +32,6 @@
     {% if page.category != null %}
       <script type="text/javascript">
         $(function() {
-          var d = $(window).height() - $(document).height();
-          if(d < 0) {
-            d = 0;
-          }
-          $('.main-padding').css('height', d);
           var activeMenu = '';
           {% for category in page.category %}
             activeMenu += ',.cat-{{ category }}';
