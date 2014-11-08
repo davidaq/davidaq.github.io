@@ -62,12 +62,7 @@
     <div class="main-body row">
       <div class="column large-9 medium-8">
         <!-- Article List [ -->
-        {% if page.category != null %}
-          {% assign showposts = site.posts | where "category",page.category %}
-        {% else %}
-          {% assign showposts = site.posts %}
-        {% endif %}
-        {% for post in showposts %}
+        {% for post in site.posts %}
         <div class="article">
           <div class="clearfix">
             <div class="date left hide-for-small">
