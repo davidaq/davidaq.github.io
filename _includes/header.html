@@ -11,13 +11,17 @@
     <script src="/static/js/vendor/fastclick.js"></script>
     <script src="/static/js/foundation.min.js"></script>
     <script type="text/javascript">
-      $(window).bind("load", function() {
-        $(document).foundation();
-        var d = $(window).height() - $(document).height();
+      function paddBottom() {
+        var d = $(window).height() - $('.inner-wrap').height();
         if(d < 0) {
           d = 0;
         }
         $('.main-padding').css('height', d);
+      }
+      $(window).bind("load", function() {
+        $(document).foundation();
+        paddBottom();
+        $(window).resize(paddBottom);
       });
       function totop() {
         var interval = setInterval(function() {
