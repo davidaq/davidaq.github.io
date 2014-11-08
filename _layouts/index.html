@@ -37,14 +37,14 @@
             <a href="/">博文</a>
             <ul class="dropdown">
               <li><label>分类</label></li>
-              <li><a href="/technique">技术心得</a></li>
-              <li><a href="/share">趣味分享</a></li>
-              <li><a href="/tutorial">教程说明</a></li>
-              <li><a href="/mood">生活心情</a></li>
+              <li><a href="/technique.html">技术心得</a></li>
+              <li><a href="/share.html">趣味分享</a></li>
+              <li><a href="/tutorial.html">教程说明</a></li>
+              <li><a href="/mood.html">生活心情</a></li>
             </ul>
           </li>
-          <li><a href="/collections">收藏夹</a></li>
-          <li><a href="/resume">我的简历</a></li>
+          <li><a href="/collections.html">收藏夹</a></li>
+          <li><a href="/resume.html">我的简历</a></li>
           <li class="has-form">
             <div class="row collapse">
               <div class="large-8 small-9 columns">
@@ -62,7 +62,12 @@
     <div class="main-body row">
       <div class="column large-9 medium-8">
         <!-- Article List [ -->
-        {% for post in site.posts %}
+        {% if page.category != null %>
+          {% assign showposts = site.posts | where "category",page.category %}
+        {% else %}
+          {% assign showposts = site.posts %}
+        {% endif %}
+        {% for post in showposts %}
         <div class="article">
           <div class="clearfix">
             <div class="date left hide-for-small">
