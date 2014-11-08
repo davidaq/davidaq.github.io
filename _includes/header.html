@@ -27,6 +27,10 @@
     {% if page.category != null %}
       <script type="text/javascript">
         $(function() {
+          var d = $(window).height() - $(document).height();
+          if(d > 0) {
+            $('.main-padding').css('height', d);
+          }
           var activeMenu = '';
           {% for category in page.category %}
             activeMenu += ',.cat-{{ category }}';

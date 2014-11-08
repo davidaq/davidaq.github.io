@@ -5,17 +5,12 @@
 .tab-bar .bg {
   background: url(../img/logo.png) no-repeat center right;
 }
-.off-canvas-wrap, .inner-wrap {
-  min-height: 100%;
-}
-.off-canvas-wrap{  
-  height: 100%;
-  overflow-y: auto;
-}
 .main-body {
   padding: 10px;
-  min-height: 85%;
   max-width: 70em;
+}
+.main-padding {
+  height: 600px;
 }
 .article div.date {
   background: #841;
