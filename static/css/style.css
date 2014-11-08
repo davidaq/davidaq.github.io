@@ -1,3 +1,7 @@
+.top-bar .name h1 {
+  background: url(../img/logo.png) no-repeat;
+  padding-left: 35px;
+}
 .main-body {
   padding: 10px;
   min-height: 85%;
