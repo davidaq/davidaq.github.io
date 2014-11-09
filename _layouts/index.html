@@ -24,7 +24,7 @@
                 <div class="text-right">
                   {% if post.category != null %}
                     {% for category in post.category %}
-                      <a href="/{{ category }}.html" class="label radius">
+                      <a href="/{{ category }}.html" class="label radius" style="color:#FFF;">
                         {% case category %}
                           {% when "mood" %}
                           生活心情
@@ -39,7 +39,7 @@
                     {% endfor %}
                     |
                   {% endif %}
-                  <a href="{{ post.url }}" class="label radius success">&raquo; 全文</a>
+                  <a href="{{ post.url }}" class="label radius success">&raquo; 阅读全文</a>
                 </div>
               </div>
             </div>
