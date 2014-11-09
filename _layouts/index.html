@@ -24,7 +24,7 @@
                 <div class="text-right">
                   {% if post.category != null %}
                     {% for category in post.category %}
-                      <a href="/{{ category }}.html">
+                      <a href="/{{ category }}.html" class="label radius">
                         {% case category %}
                           {% when "mood" %}
                           生活心情
