@@ -1,5 +1,5 @@
 ---
-title: 高中同学告诉我联通现在很不景气
+title: 老同学说中国联通现在很不景气
 category: mood
 layout: post
 ---
