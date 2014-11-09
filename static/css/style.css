@@ -13,7 +13,7 @@
   height: 200px;
 }
 .article div.date {
-  background: #841;
+  background: #555;
   padding: 3px;
   padding-top: 0;
   color: #FFF;
@@ -30,7 +30,7 @@
 }
 .article div.date .day {
   background: #FFF;
-  color: #841;
+  color: #555;
   font-size: 1.1em;
   line-height: 1.7em;
   font-weight: bold;
