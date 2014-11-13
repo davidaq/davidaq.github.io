@@ -1,0 +1,74 @@
+<meta http-equiv="Content-type" content="text/html;charset=utf-8"/>
+<style type="text/css">
+#P1 {
+    position: relative;
+}
+#P1 .SCENE {
+    margin: 5px;
+    padding: 5px;
+    background: #CCC;
+    border: 1px solid #777;
+    width: 400px;
+}
+#P1 .SCENE .layer {
+    overflow: hidden;
+    zoom: 1;
+}
+#P1 .SCENE .layer span {
+    background: #FA5;
+    border: 1px solid #777;
+    margin: 1px;
+    padding: 2px;
+}
+#S5_2, #S5_3 {
+    position: relative;
+}
+</style>
+<script type="text/javascript" src="http://davidaq.com/static/js/vendor/jquery.js"></script>
+<script type="text/javascript">
+function play() {
+    $('#cut1,#cut2,.SCENE').animate({
+        opacity:1,
+        left:0,
+        top:0
+    }, 300);
+    $('#cut1').delay(900).animate({height:$('#S5_2').height() + 5}, 500).animate({opacity:0}, 500, function() {
+        $('#S5_2').delay(200).animate({
+            left: $('#cut1').offset().left - $('#S5_2').offset().left,
+            top: $('#cut1').offset().top - $('#S5_2').offset().top,
+        }, 500, function() {
+            $('#cut2').delay(500)
+                .animate({opacity: 0.5}, 200).animate({opacity: 1}, 200)
+                .animate({opacity: 0.5}, 200).animate({opacity: 1}, 200)
+                .animate({opacity:0}, 500, function() {
+                    $('#S5_3').delay(500).animate({
+                        left: $('#cut2').offset().left - $('#S5_3').offset().left - 5,
+                        top: $('#cut2').offset().top - $('#S5_3').offset().top - 5,
+                    });
+                setTimeout(play, 3000);
+            });
+        });
+    });
+}
+$(play);
+</script>
+
+<h1>#+1代表的意义</h1>
+
+<div id="P1">
+    <div id="S5_1" class="SCENE">
+        <div>第1个场景</div>
+        <div class="layer"><span style="width:70%; float:left">图层....</span></div>
+        <div class="layer"><span id="cut1" style="width:31%; float:right">#+1</span></div>
+        <div class="layer"><span style="width:47%; float:right">....</span></div>
+    </div>
+    <div id="S5_2" class="SCENE">
+        第2个场景
+        <div class="layer"><span style="width:30%; float:left">....</span></div>
+        <div class="layer"><span id="cut2" style="width:31%; float:right">#+1</span></div>
+        <div class="layer"><span style="width:79%; float:right">....</span></div>
+    </div>
+    <div id="S5_3" class="SCENE">
+        第3个场景
+    </div>
+</div>
