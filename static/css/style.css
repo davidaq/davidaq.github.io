@@ -49,7 +49,7 @@
     display: block;
     max-width: 100%;
     overflow: auto;
-    box-shadow: 0 0 10px #000;
+    box-shadow: 0 0 10px #000 inset;
 }
 .article .content code {
     font-size: 0.85em;
