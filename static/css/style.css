@@ -54,6 +54,7 @@
     display: inline-block;
     padding: 0 5px;
     box-shadow: 0 0 10px #000 inset;
+    text-indent: 0;
 }
 .article .content pre code {
     margin: 5px;
