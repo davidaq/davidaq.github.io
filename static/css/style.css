@@ -44,22 +44,24 @@
   margin-bottom: 20px;
   border-bottom: 1px solid #DDD;
 }
-.article .content pre code {
-    padding: 5px 10px;
-    display: block;
-    max-width: 100%;
-    overflow: auto;
-    box-shadow: 0 0 10px #000 inset;
-}
 .article .content code {
     font-size: 0.85em;
-    margin: 5px;
+    margin: 0 5px;
     background: #222;
     border-radius: 5px;
     color: #FF0;
     text-shadow: 1px 1px 3px #000;
+    display: inline-block;
+    padding: 0 5px;
+    box-shadow: 0 0 10px #000 inset;
 }
-
+.article .content pre code {
+    margin: 5px;
+    padding: 5px 10px;
+    display: block;
+    max-width: 100%;
+    overflow: auto;
+}
 .article p {
   text-indent: 2em;
 }
