@@ -44,6 +44,15 @@
   margin-bottom: 20px;
   border-bottom: 1px solid #DDD;
 }
+.article .content h1,
+.article .content h2,
+.article .content h3,
+.article .content h4,
+.article .content h5,
+.article .content h6 {
+    font-weight: bold;
+    text-shadow: 1px 1px 3px #777;
+}
 .article .content code, .article .content .code {
     font-size: 0.85em;
     margin: 0 5px;
