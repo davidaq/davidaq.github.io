@@ -1,6 +1,8 @@
 ---
 title: 安卓应用嵌入浏览器
-category: technique share
+category: 
+    - technique
+    - share
 layout: post
 ---
 现如今的WEB技术，HTML+CSS+JS的功能性与灵活性极为迷人，而随着WEB的发展，很多手机应用也选择嵌入浏览器，用WEB技术实现UI。
