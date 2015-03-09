@@ -81,3 +81,12 @@ ffmpeg可以把一组图片转换成一个视频（可以把gif动画也当成�
 有些音乐文件包含专辑封面图片在里面，可以用如下命令简单取出。
 
     fmpeg -i input.mp3 cover.jpg
+
+
+#### H264视频首位拼接
+如果确定输入文件都是H264编码，且尺寸、帧率等都相同，先把源视频转换成用于直播的ts格式。
+然后直接对多个ts文件进行文件级的拼接，然后在转换回到目标格式。这个过程中，不会发生格式转换，所以非常迅速。
+
+    ffmpeg -i q.mp4 -c copy -bsf h264_mp4toannexb q.ts
+    ffmpeg -i r.mp4 -c copy -bsf h264_mp4toannexb r.ts
+    ffmpeg -i "concat:q.ts|r.ts" -c copy -bsf aac_adtstoasc qr.mp4
