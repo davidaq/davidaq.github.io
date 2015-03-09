@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style rel="stylesheet" type="text/css">
+            html,body,video{
+                padding:0;
+                margin:0;
+                width:100%;
+                height:100%;
+                display:block;
+            }
+        </style>
+    </head>
+    <body onload="document.getElementById('v').src=document.location.hash.substr(1)">
+        <video id="v" controls="controls"></video>
+    </body>
+</body>
