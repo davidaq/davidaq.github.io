@@ -19,11 +19,9 @@ GIT新手最容易犯的一个错误就是没有添加.gitignore，而把不该�
 但问题总会有聪明办法解决。GIT中用`git rm --cached xxx`可以在不动项目当前工作空间的情况下，
 将文件从当前（未提交）版本中移除。如此而来简单方法就出来了：
 
-```
-git rm -r --cached .
-git add .
-git commit -m ".gitignore is now working"
-```
+    git rm -r --cached .
+    git add .
+    git commit -m ".gitignore is now working"
 
 在项目根目录执行简单三行命令，就先把所有文件从版本控制中移除，然后再重新加回来。
 提交上传后，就发现新的.gitignore就此生效了，不该有的文件不再被传来传去了。
