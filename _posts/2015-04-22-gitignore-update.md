@@ -1,6 +1,8 @@
 ---
 title: .gitignore更新后如何生效
-category: technique share
+category: 
+    - technique 
+    - share
 layout: post
 ---
 GIT是个十分受欢迎的版本控制器，尤其适合项目当中有新手的情况，因为除了服务器以外，
