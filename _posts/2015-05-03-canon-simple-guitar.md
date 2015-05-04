@@ -7,4 +7,4 @@ layout: post
 ---
 很喜欢这个曲子，收藏用来练习
 
-<img src="http://ccme-storage.qiniudn.com/canon.png.png" style="width:100%"/>
+<img src="/res/canon-guitar.png" style="width:100%"/>
