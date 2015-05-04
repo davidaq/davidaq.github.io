@@ -1,6 +1,8 @@
 ---
 title: 卡农吉他简单版谱
-category: share
+category: 
+  - share
+  - mood
 layout: post
 ---
 很喜欢这个曲子，收藏用来练习
