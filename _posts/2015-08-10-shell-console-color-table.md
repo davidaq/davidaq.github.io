@@ -7,6 +7,7 @@ layout: post
 ---
 在Linux/Unix操作系统的控制台，通过特殊的输出格式可以改变输出文字的字体，彩色的输出非常有助于调试程序，区分日志输出的重要程度。
 最基本的用法就是在控制台中用`echo -e "\033[...m"`的方式改变接下来的输出格式，`...`代表字体代码，可以改变文字颜色、背景色，已经突出程度。
+
 下面的代码可以输出一张字体表：
 
     #!/bin/bash
@@ -25,4 +26,4 @@ layout: post
 
 输出结果如下图所示：
 
-<img src="/res/2015-08-10-shell-console-color-table.png" style="width:100%"/>
+<img src="/res/2015-08-10-shell-console-color-table.png" style="max-width:100%"/>
