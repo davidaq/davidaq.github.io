@@ -25,4 +25,4 @@ layout: post
 
 输出结果如下图所示：
 
-<img src="2015-08-10-shell-console-color-table.png" style="width:100%"/>
+<img src="/res/2015-08-10-shell-console-color-table.png" style="width:100%"/>
