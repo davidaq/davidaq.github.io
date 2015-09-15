@@ -48,6 +48,7 @@ Xcode坏了，于是拔掉了数据线，让程序脱离调试环境运行，但
 下附我的指针管理代码：
 
 mem.h:
+-----
 
     #ifndef HEADER_MEM_H
     #define HEADER_MEM_H
@@ -91,7 +92,9 @@ mem.h:
     
     #endif
 
+
 mem.c:
+-----
     
     #include <stdio.h>
     #include <stdint.h>
