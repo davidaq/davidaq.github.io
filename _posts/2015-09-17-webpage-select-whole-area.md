@@ -47,7 +47,9 @@ layout: post
         var ele = $('.select-all')[0];
         if (u.indexOf('Android') > -1 || u.indexOf('Linux') > -1) {
             // 此处将div转变成a
-            var atag = $('<a href="/">' + $(ele).html() + '</a>');
+            // href设置成自定义协议会被微信劫持
+            // 所以不用担心只有复制链接选项
+            var atag = $('<a href="copy://copyme">' + $(ele).html() + '</a>');
             $.each(ele.attributes, function(i, attribute){
                 atag.attr(attribute.nodeName, attribute.nodeValue);
             });
