@@ -28,11 +28,13 @@ layout: post
 
 #### JS：
 
- 1. es6
- 2. 为何我们常常把 &lt;script&gt; 放在html的最后？
- 3. AJAX什么样的情况算跨域？有哪些解决方法？
- 4. 描述一下JSONP的原理
- 5. WebSocket、Long Polling、Server Sent Event
+ 1. 描述一下JS中变量的作用域
+ 2. 描述一下JS中如何面向对象以及函数调用中的this到底是什么
+ 3. 为何我们常常把 &lt;script&gt; 放在html的最后？
+ 4. AJAX什么样的情况算跨域？有哪些解决方法？
+ 5. 描述一下JSONP的原理
+ 6. WebSocket、Long Polling、Server Sent Event
+ 7. es6主要都有哪些语法特型？stage-0/1/2/3又是什么？
 
 #### React：
  
