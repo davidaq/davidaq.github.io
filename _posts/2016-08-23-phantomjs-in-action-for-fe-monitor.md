@@ -98,6 +98,7 @@ bdwm-orion通过`phantom`模块使用了PhantomJS提供的以下功能：
  - 抓取网页截图
 
 bdwm-orion基本逻辑思路如下：
+
  - 首先根据配置文件初始化一个PhantomJS进程实例和窗口
  - 监听`console`输出、页面开始加载、页面加载完成、开始网络请求、网络请求成功、网络请求失败等事件
  - 在页面开始加载的时候注入一些JS库，如bluebird、jQuery
