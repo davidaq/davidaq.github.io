@@ -34,8 +34,9 @@ layout: post
  3. 为何我们常常把 &lt;script&gt; 放在html的最后？
  4. AJAX什么样的情况算跨域？有哪些解决方法？
  5. 描述一下JSONP的原理
- 6. WebSocket、Long Polling、Server Sent Event
- 7. es6主要都有哪些语法特型？stage-0/1/2/3又是什么？
+ 6. Promise
+ 7. WebSocket、Long Polling、Server Sent Event
+ 8. es6主要都有哪些语法特性？stage-0/1/2/3又是什么？
 
 #### React：
  
