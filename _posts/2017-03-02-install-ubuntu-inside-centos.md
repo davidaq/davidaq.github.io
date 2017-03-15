@@ -6,9 +6,6 @@ category:
 layout: post
 ---
 
-背景
-===
-
 看到标题就会有人问为啥要干这种事，直接装Ubuntu系统不就好了。这件事是有背景的，一切要从公司的前端自动化测试项目想要从PhantomJS切换成Chrome说起。为何要用Chrome代替PhantomJS不是这里讨论的主题，但是要先澄清的是，我们所需要的Chrome不是普通的Chrome，而是能像PhantomJS一样运行在Linux服务器上的Chrome。
 
 本文介绍的就是如何在已有的CentOS系统里安装一个Ubuntu（不是虚拟机，不是虚拟机，不是虚拟机）。
