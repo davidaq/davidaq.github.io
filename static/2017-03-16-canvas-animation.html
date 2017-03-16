@@ -15,6 +15,7 @@
     <canvas id="animation_canvas"></canvas>
     <script type="text/javascript">
       window.artificialAnimation = (function () {
+        "use strict";
         /**
          * Called before the first frame renders
          * Setup initial states
@@ -36,8 +37,8 @@
               size: Math.random(),
             });
           }
-          for (var i = 1; i < 11; i++) {
-            var x = i / 11;
+          for (var i = 0; i <= 11; i++) {
+            var x = i / 11 * 1.08 - 0.04;
             renderContext.triangleLine.push({
               x: x,
               y: 0.52,
@@ -54,7 +55,9 @@
          * Update states according to elapsed time
          */
         function updateStates(renderContext, timeSinceLastFrame) {
-          renderContext.bgDots.forEach(function (dot) {
+          var dots = renderContext.bgDots;
+          for (var i = dots.length - 1; i >= 0; i--) {
+            var dot = dots[i];
             dot.y -= timeSinceLastFrame * dot.speed;
             dot.x += (dot.x - 0.5) * dot.speed * 10;
             dot.alpha = (dot.y - 0.3) / 0.3 * 2;
@@ -64,7 +67,7 @@
               dot.speed = Math.random() * 0.0001 + 0.0001;
               dot.size = Math.random();
             }
-          });
+          };
           var prevTriangle;
           renderContext.triangleLineWave += 0.0001 * timeSinceLastFrame;
           if (renderContext.triangleLineWave > 4) {
@@ -75,8 +78,10 @@
           if (renderContext.triangleLineRotate > 2 * Math.PI) {
             renderContext.triangleLineRotate -= 2 * Math.PI;
           }
-          renderContext.triangleLine.forEach(function (triangle, i) {
-            triangle.rotate = renderContext.triangleLineRotate + i * 0.3;
+          var triangleLine = renderContext.triangleLine;
+          for (var j = triangleLine.length - 1; j >= 0; j--) {
+            var triangle = triangleLine[j];
+            triangle.rotate = renderContext.triangleLineRotate + j * 0.3;
             prevTriangle = triangle;
             var triangeSize = triangle.size / (Math.abs(triangleLineWave - triangle.x) + 0.3);
             triangle.extSize = triangeSize;
@@ -84,21 +89,24 @@
             var dot = triangle.dots[0];
             dot.y = Math.cos(triangle.rotate) * triangeSize;
             dot.z = -Math.sin(triangle.rotate) * triangeSize;
+            dot.zoom = 1 - dot.z;
+            dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
+            dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
 
             dot = triangle.dots[1];
             dot.y = Math.cos(triangle.rotate + Math.PI * 2 / 3) * triangeSize;
             dot.z = -Math.sin(triangle.rotate + Math.PI * 2 / 3) * triangeSize;
+            dot.zoom = 1 - dot.z;
+            dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
+            dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
             
             dot = triangle.dots[2];
             dot.y = Math.cos(triangle.rotate + Math.PI * 4 / 3) * triangeSize;
             dot.z = -Math.sin(triangle.rotate + Math.PI * 4 / 3) * triangeSize;
-
-            triangle.dots.forEach(function (dot) {
-              dot.zoom = 1 - dot.z;
-              dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
-              dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
-            });
-          });
+            dot.zoom = 1 - dot.z;
+            dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
+            dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
+          };
         }
 
         /**
