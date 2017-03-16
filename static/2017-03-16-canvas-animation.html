@@ -37,15 +37,15 @@
               size: Math.random(),
             });
           }
-          var triangleCount = 21;
+          var triangleCount = 15;
           for (var i = 0; i <= triangleCount; i++) {
             var x = i / triangleCount * 1.08 - 0.04;
             renderContext.triangleLine.push({
               x: x,
-              y: 0.52,
+              y: 0.55,
               dots: [{}, {}, {}],
               rotate: x * 2 * Math.PI,
-              size: 0.02,
+              size: 0.06,
             });
           }
           return renderContext;
@@ -62,29 +62,32 @@
             dot.y -= timeSinceLastFrame * dot.speed;
             dot.x += (dot.x - 0.5) * dot.speed * 30;
             if (dot.y < 0.1 || dot.x < -0.01 || dot.x > 1.01 || (dot.y < 0.4 && dot.alpha < 0.1)) {
-              dot.y = 0.5;
+              dot.y = 0.55;
               dot.x = Math.random();
               dot.speed = Math.random() * 0.0001 + 0.0001;
               dot.size = Math.random();
             }
-            dot.alpha = dot.y < 0.4 ? (dot.y - 0.3) / 0.1 : (0.5 - dot.y) / 0.1;
+            dot.alpha = dot.y < 0.4 ? (dot.y - 0.3) / 0.1 : (0.55 - dot.y) / 0.1;
           };
           var prevTriangle;
-          renderContext.triangleLineWave += 0.0001 * timeSinceLastFrame;
-          if (renderContext.triangleLineWave > 4) {
+          renderContext.triangleLineWave += 0.0003 * timeSinceLastFrame;
+          if (renderContext.triangleLineWave > 2) {
             renderContext.triangleLineWave = 0;
           }
-          var triangleLineWave = Math.abs(renderContext.triangleLineWave - 2) - 0.5;
+          var triangleLineWave = (Math.abs(renderContext.triangleLineWave - 2) - 0.75) * 2;
           renderContext.triangleLineRotate += 0.002 * timeSinceLastFrame;
           if (renderContext.triangleLineRotate > 2 * Math.PI) {
             renderContext.triangleLineRotate -= 2 * Math.PI;
           }
           var triangleLine = renderContext.triangleLine;
+          var triangleRotate = renderContext.triangleLineRotate;
+          var rotateStep = 4 / triangleLine.length;
           for (var j = triangleLine.length - 1; j >= 0; j--) {
             var triangle = triangleLine[j];
-            triangle.rotate = renderContext.triangleLineRotate + j * 0.3;
+            triangle.rotate = triangleRotate;
             prevTriangle = triangle;
-            var triangeSize = triangle.size / (Math.abs(triangleLineWave - triangle.x) + 0.3);
+            var triangeSize = triangle.size * Math.max(0.4, 1.2 * (1 - Math.abs(triangleLineWave - triangle.x) * 0.5));
+            triangleRotate += rotateStep;
             triangle.extSize = triangeSize;
             for (var i = 0; i < 3; i++) {
               var dot = triangle.dots[i];
@@ -127,7 +130,7 @@
             for (var i = 0; i < 3; i++) {
               var dot = triangle.dots[i];
               var nextDot = triangle.dots[(i + 1) % 3];
-              var alpha = Math.pow(triangle.extSize / 0.1, 3);
+              var alpha = Math.pow(triangle.extSize / 0.09, 3);
               if (alpha > 0.01) {
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = '#55F';
@@ -137,7 +140,7 @@
                 ctx.fill();
               }
 
-              alpha *= (dot.z + nextDot.z + 0.1) / 2 / 0.1 * 0.9 + 0.1;
+              alpha *= (dot.z + nextDot.z + 0.12) / 2 / 0.12 * 0.9 + 0.1;
               if (alpha > 0.01) {
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = '#55F';
@@ -150,7 +153,7 @@
               if (prevTriangle) {
                 var nextDot = prevTriangle.dots[i];
                 alpha = Math.pow(triangle.extSize / 0.03, 2);
-                alpha *= (dot.z + nextDot.z + 0.1) / 2 / 0.1 * 0.9 + 0.1;
+                alpha *= (dot.z + nextDot.z + 0.12) / 2 / 0.12 * 0.9 + 0.1;
                 ctx.strokeStyle = 'rgba(180, 180, 255, ' + alpha + ')';
                 ctx.beginPath();
                 ctx.moveTo(X(dot.x), Y(dot.y));

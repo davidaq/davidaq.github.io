@@ -51,7 +51,7 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
               size: Math.random(),
             });
           }
-          var triangleCount = 21;
+          var triangleCount = 15;
           for (var i = 0; i <= triangleCount; i++) {
             var x = i / triangleCount * 1.08 - 0.04;
             renderContext.triangleLine.push({
