@@ -7,7 +7,9 @@ layout: post
 
 今日无大事，用canvas做了个动画，回顾一下以前的技能。
 
-Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://davidaq.com/static/2017-03-16-canvas-animation)
+<div style="width: 100%; height: 0; padding-bottom: 35%; position: relative">
+  <iframe style="position: absolute; top:0; left: 0; width: 100%; height: 100%" src="http://davidaq.com/static/2017-03-16-canvas-animation" frameborder="0"></iframe>
+</div>
 
 全部代码：
 
