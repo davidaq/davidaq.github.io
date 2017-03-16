@@ -179,27 +179,25 @@
           var prevTime = Date.now();
           var fnum = 0xffffff;
           function requestRender() {
-            nextFrame(function() {
-              if (!canvasElement.parentElement) {
-                return;
+            if (!canvasElement.parentElement) {
+              return;
+            }
+            var nowTime = Date.now();
+            var timeSinceLastFrame = nowTime - prevTime;
+            prevTime = nowTime;
+            updateStates(renderContext, timeSinceLastFrame);
+            if (++fnum > 20) {
+              fnum = 0;
+              var rc = canvasElement.getBoundingClientRect();
+              if (rc.width != width || rc.height != height) {
+                width = canvasElement.width = rc.width;
+                height = canvasElement.height = rc.height;
               }
-              var nowTime = Date.now();
-              var timeSinceLastFrame = nowTime - prevTime;
-              prevTime = nowTime;
-              updateStates(renderContext, timeSinceLastFrame);
-              if (++fnum > 20) {
-                fnum = 0;
-                var rc = canvasElement.getBoundingClientRect();
-                if (rc.width != width || rc.height != height) {
-                  width = canvasElement.width = rc.width;
-                  height = canvasElement.height = rc.height;
-                }
-              }
-              drawFrame(renderContext, width, height);
-              requestRender();
-            });
+            }
+            drawFrame(renderContext, width, height);
+            nextFrame(requestRender);
           }
-          requestRender();
+          nextFrame(requestRender);
         }
 
         return beginAnimation;
