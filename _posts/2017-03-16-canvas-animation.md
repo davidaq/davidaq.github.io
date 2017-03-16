@@ -10,17 +10,22 @@ layout: post
 Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://davidaq.com/static/2017-03-16-canvas-animation)
 
 全部代码：
-```
-<!DOCTYPE html>
+
+```<!DOCTYPE html>
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Artificial Animation</title>
     <style>
-      html, body { height: 100%; padding: 0; margin: 0; }
+      html, body { height: 100%; padding: 0; margin: 0; background: #080518; overflow: hidden; }
+      canvas { width: 100%; height: 100%; }
+      @media (min-width: 600px) {
+        canvas { width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; }
+      }
     </style>
   </head>
   <body>
-    <canvas style="width: 100%; height: 100%" id="animation_canvas"></canvas>
+    <canvas id="animation_canvas"></canvas>
     <script type="text/javascript">
       window.artificialAnimation = (function () {
         /**
@@ -34,8 +39,9 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
             bgDots: [],
             triangleLine: [],
             triangleLineWave: 0,
+            triangleLineRotate: 0,
           };
-          for (var i = 0; i < 35; i++) {
+          for (var i = 0; i < 15; i++) {
             renderContext.bgDots.push({
               y: Math.random() * 0.5,
               x: Math.random(),
@@ -43,12 +49,12 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
               size: Math.random(),
             });
           }
-          for (var i = 0; i <= 17; i++) {
+          for (var i = 1; i < 17; i++) {
             var x = i / 17;
             renderContext.triangleLine.push({
               x: x,
               y: 0.52,
-              dots: [],
+              dots: [{}, {}, {}],
               rotate: x * 2 * Math.PI,
               size: 0.02,
             });
@@ -64,7 +70,8 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
           renderContext.bgDots.forEach(function (dot) {
             dot.y -= timeSinceLastFrame * dot.speed;
             dot.x += (dot.x - 0.5) * dot.speed * 10;
-            if (dot.y < 0.1) {
+            dot.alpha = (dot.y - 0.3) / 0.3 * 2;
+            if (dot.y < 0.1 || dot.alpha < 0.1 || dot.x < -0.01 || dot.x > 1.01) {
               dot.y = 0.5;
               dot.x = Math.random();
               dot.speed = Math.random() * 0.0001 + 0.0001;
@@ -72,40 +79,36 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
             }
           });
           var prevTriangle;
-          renderContext.triangleLineWave += 0.003;
+          renderContext.triangleLineWave += 0.0001 * timeSinceLastFrame;
           if (renderContext.triangleLineWave > 4) {
             renderContext.triangleLineWave = 0;
           }
           var triangleLineWave = Math.abs(renderContext.triangleLineWave - 2) - 0.5;
-          renderContext.triangleLine.forEach(function (triangle) {
-            triangle.rotate += 0.05;
-            // Math.random() * 0.05 + 0.01;
-            // if (prevTriangle) {
-            //   if (triangle.rotate - prevTriangle.rotate > 0.03) {
-            //     triangle.rotate = prevTriangle.rotate + 0.03;
-            //   }
-            // }
+          renderContext.triangleLineRotate += 0.002 * timeSinceLastFrame;
+          if (renderContext.triangleLineRotate > 2 * Math.PI) {
+            renderContext.triangleLineRotate -= 2 * Math.PI;
+          }
+          renderContext.triangleLine.forEach(function (triangle, i) {
+            triangle.rotate = renderContext.triangleLineRotate + i * 0.3;
             prevTriangle = triangle;
             var triangeSize = triangle.size / (Math.abs(triangleLineWave - triangle.x) + 0.3);
             triangle.extSize = triangeSize;
-            triangle.dots[0] = {
-              x: 0,
-              y: Math.cos(triangle.rotate) * triangeSize,
-              z: -Math.sin(triangle.rotate) * triangeSize,
-            };
-            triangle.dots[1] = {
-              x: 0,
-              y: Math.cos(triangle.rotate + Math.PI * 2 / 3) * triangeSize,
-              z: -Math.sin(triangle.rotate + Math.PI * 2 / 3) * triangeSize,
-            };
-            triangle.dots[2] = {
-              x: 0,
-              y: Math.cos(triangle.rotate + Math.PI * 4 / 3) * triangeSize,
-              z: -Math.sin(triangle.rotate + Math.PI * 4 / 3) * triangeSize,
-            };
+
+            var dot = triangle.dots[0];
+            dot.y = Math.cos(triangle.rotate) * triangeSize;
+            dot.z = -Math.sin(triangle.rotate) * triangeSize;
+
+            dot = triangle.dots[1];
+            dot.y = Math.cos(triangle.rotate + Math.PI * 2 / 3) * triangeSize;
+            dot.z = -Math.sin(triangle.rotate + Math.PI * 2 / 3) * triangeSize;
+            
+            dot = triangle.dots[2];
+            dot.y = Math.cos(triangle.rotate + Math.PI * 4 / 3) * triangeSize;
+            dot.z = -Math.sin(triangle.rotate + Math.PI * 4 / 3) * triangeSize;
+
             triangle.dots.forEach(function (dot) {
               dot.zoom = 1 - dot.z;
-              dot.x = (dot.x + triangle.x - 0.5) * dot.zoom + 0.5;
+              dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
               dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
             });
           });
@@ -126,11 +129,11 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
           ctx.fillStyle = '#080518';
           ctx.fillRect(0, 0, width, height);
           renderContext.bgDots.forEach(function (dot) {
-            var alpha = (dot.y - 0.3) / 0.3;
+            var alpha = dot.alpha;
             var radgrad = ctx.createRadialGradient(X(dot.x), Y(dot.y), 0, X(dot.x), Y(dot.y), X(0.01));
-            radgrad.addColorStop(0, 'rgba(80, 80, 250, ' + alpha * 2 + ')');
-            radgrad.addColorStop(0.3 * dot.size + 0.1, 'rgba(80, 80, 250, ' + alpha * 0.2 + ')');
-            radgrad.addColorStop(0.6, 'rgba(80, 80, 250, ' + alpha * 0.1 + ')');
+            radgrad.addColorStop(0, 'rgba(80, 80, 250, ' + alpha + ')');
+            radgrad.addColorStop(0.3 * dot.size + 0.1, 'rgba(80, 80, 250, ' + (alpha * 0.4) + ')');
+            radgrad.addColorStop(0.6, 'rgba(80, 80, 250, ' + (alpha * 0.2) + ')');
             radgrad.addColorStop(1, 'rgba(80, 80, 250, 0)');
             ctx.fillStyle = radgrad;
             ctx.beginPath();
@@ -140,8 +143,8 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
           var prevTriangle;
           renderContext.triangleLine.forEach(function (triangle) {
             triangle.dots.forEach(function (dot, i) {
-              var alpha = Math.pow(triangle.extSize / 0.1, 3);
-              if (alpha > 0.1) {
+              var alpha = Math.pow(triangle.extSize / 0.1, 2);
+              if (alpha > 0.3) {
                 var radgrad = ctx.createRadialGradient(X(dot.x), Y(dot.y), 0, X(dot.x), Y(dot.y), X(0.005 * dot.zoom));
                 radgrad.addColorStop(0, 'rgba(180, 180, 255, ' + alpha + ')');
                 radgrad.addColorStop(0.7, 'rgba(180, 180, 255, ' + alpha * 0.7 + ')');
@@ -152,19 +155,19 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
                 ctx.fill();
               }
 
-              var nextDot = triangle.dots[(i + 1) % 3];
-              ctx.shadowBlur = 10;
-              ctx.shadowColor = '#55F';
-              ctx.strokeStyle = 'rgba(180, 180, 255, ' + Math.pow(triangle.extSize / 0.1, 3) + ')';
-              ctx.beginPath();
-              ctx.moveTo(X(dot.x), Y(dot.y));
-              ctx.lineTo(X(nextDot.x), Y(nextDot.y));
-              ctx.stroke();
+              alpha = Math.pow(triangle.extSize / 0.1, 3);
+              if (alpha > 0.01) {
+                var nextDot = triangle.dots[(i + 1) % 3];
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#55F';
+                ctx.strokeStyle = 'rgba(180, 180, 255, ' + alpha + ')';
+                ctx.beginPath();
+                ctx.moveTo(X(dot.x), Y(dot.y));
+                ctx.lineTo(X(nextDot.x), Y(nextDot.y));
+                ctx.stroke();
+              }
               if (prevTriangle) {
-                // ctx.shadowBlur = 10;
-                // ctx.shadowColor = '#55F';
-                // ctx.strokeStyle = '#99F';
-                ctx.strokeStyle = 'rgba(180, 180, 255, ' + Math.pow(triangle.extSize / 0.02, 2) + ')';
+                ctx.strokeStyle = 'rgba(180, 180, 255, ' + Math.pow(triangle.extSize / 0.04, 2) + ')';
                 var nextDot = prevTriangle.dots[i];
                 ctx.beginPath();
                 ctx.moveTo(X(dot.x), Y(dot.y));
@@ -187,21 +190,25 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
           var height = 0;
           var renderContext = createRenderContext(canvasElement);
           var prevTime = Date.now();
+          var fnum = 0xffffff;
           function requestRender() {
-            if (!canvasElement.parentElement) {
-              return;
-            }
-            var rc = canvasElement.getBoundingClientRect();
-            if (rc.width != width || rc.height != height) {
-              width = canvasElement.width = rc.width;
-              height = canvasElement.height = rc.height;
-            }
-            drawFrame(renderContext, width, height);
             nextFrame(function() {
+              if (!canvasElement.parentElement) {
+                return;
+              }
               var nowTime = Date.now();
               var timeSinceLastFrame = nowTime - prevTime;
               prevTime = nowTime;
               updateStates(renderContext, timeSinceLastFrame);
+              if (++fnum > 20) {
+                fnum = 0;
+                var rc = canvasElement.getBoundingClientRect();
+                if (rc.width != width || rc.height != height) {
+                  width = canvasElement.width = rc.width;
+                  height = canvasElement.height = rc.height;
+                }
+              }
+              drawFrame(renderContext, width, height);
               requestRender();
             });
           }
