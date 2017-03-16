@@ -37,8 +37,9 @@
               size: Math.random(),
             });
           }
-          for (var i = 0; i <= 11; i++) {
-            var x = i / 11 * 1.08 - 0.04;
+          var triangleCount = 21;
+          for (var i = 0; i <= triangleCount; i++) {
+            var x = i / triangleCount * 1.08 - 0.04;
             renderContext.triangleLine.push({
               x: x,
               y: 0.52,
@@ -85,27 +86,15 @@
             prevTriangle = triangle;
             var triangeSize = triangle.size / (Math.abs(triangleLineWave - triangle.x) + 0.3);
             triangle.extSize = triangeSize;
-
-            var dot = triangle.dots[0];
-            dot.y = Math.cos(triangle.rotate) * triangeSize;
-            dot.z = -Math.sin(triangle.rotate) * triangeSize;
-            dot.zoom = 1 - dot.z;
-            dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
-            dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
-
-            dot = triangle.dots[1];
-            dot.y = Math.cos(triangle.rotate + Math.PI * 2 / 3) * triangeSize;
-            dot.z = -Math.sin(triangle.rotate + Math.PI * 2 / 3) * triangeSize;
-            dot.zoom = 1 - dot.z;
-            dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
-            dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
-            
-            dot = triangle.dots[2];
-            dot.y = Math.cos(triangle.rotate + Math.PI * 4 / 3) * triangeSize;
-            dot.z = -Math.sin(triangle.rotate + Math.PI * 4 / 3) * triangeSize;
-            dot.zoom = 1 - dot.z;
-            dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
-            dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
+            for (var i = 0; i < 3; i++) {
+              var dot = triangle.dots[i];
+              var rotate = triangle.rotate + Math.PI * i * 2 / 3;
+              dot.y = Math.cos(rotate) * triangeSize;
+              dot.z = -Math.sin(rotate) * triangeSize;
+              dot.zoom = 1 - dot.z;
+              dot.x = (triangle.x - 0.5) * dot.zoom + 0.5;
+              dot.y = (dot.y + triangle.y - 0.5) * dot.zoom + 0.5;
+            }
           };
         }
 
@@ -124,12 +113,6 @@
           for (var i = dots.length - 1; i >= 0; i--) {
             var dot = dots[i];
             var alpha = dot.alpha;
-            // var radgrad = ctx.createRadialGradient(X(dot.x), Y(dot.y), 0, X(dot.x), Y(dot.y), X(0.01));
-            // radgrad.addColorStop(0, 'rgba(80, 80, 250, ' + alpha + ')');
-            // radgrad.addColorStop(0.3 * dot.size + 0.1, 'rgba(80, 80, 250, ' + (alpha * 0.4) + ')');
-            // radgrad.addColorStop(0.6, 'rgba(80, 80, 250, ' + (alpha * 0.2) + ')');
-            // radgrad.addColorStop(1, 'rgba(80, 80, 250, 0)');
-            // ctx.fillStyle = radgrad;
             ctx.shadowBlur = 10;
             ctx.shadowColor = '#55F';
             ctx.fillStyle = 'rgba(180, 180, 255, ' + alpha + ')';
@@ -141,9 +124,8 @@
           var triangleLine = renderContext.triangleLine;
           for (var j = triangleLine.length - 1; j >= 0; j--) {
             var triangle = triangleLine[j];
-            dots = triangle.dots;
-            for (var i = dots.length - 1; i >= 0; i--) {
-              var dot = dots[i];
+            for (var i = 0; i < 3; i++) {
+              var dot = triangle.dots[i];
               var alpha = Math.pow(triangle.extSize / 0.1, 3);
               if (alpha > 0.01) {
                 ctx.shadowBlur = 10;
@@ -163,7 +145,7 @@
                 ctx.stroke();
               }
               if (prevTriangle) {
-                ctx.strokeStyle = 'rgba(180, 180, 255, ' + Math.pow(triangle.extSize / 0.04, 2) + ')';
+                ctx.strokeStyle = 'rgba(180, 180, 255, ' + Math.pow(triangle.extSize / 0.03, 2) + ')';
                 var nextDot = prevTriangle.dots[i];
                 ctx.beginPath();
                 ctx.moveTo(X(dot.x), Y(dot.y));
