@@ -59,14 +59,14 @@
           for (var i = dots.length - 1; i >= 0; i--) {
             var dot = dots[i];
             dot.y -= timeSinceLastFrame * dot.speed;
-            dot.x += (dot.x - 0.5) * dot.speed * 10;
-            dot.alpha = (dot.y - 0.3) / 0.3 * 2;
-            if (dot.y < 0.1 || dot.alpha < 0.1 || dot.x < -0.01 || dot.x > 1.01) {
+            dot.x += (dot.x - 0.5) * dot.speed * 30;
+            if (dot.y < 0.1 || dot.x < -0.01 || dot.x > 1.01 || (dot.y < 0.4 && dot.alpha < 0.1)) {
               dot.y = 0.5;
               dot.x = Math.random();
               dot.speed = Math.random() * 0.0001 + 0.0001;
               dot.size = Math.random();
             }
+            dot.alpha = dot.y < 0.4 ? (dot.y - 0.3) / 0.1 : (0.5 - dot.y) / 0.1;
           };
           var prevTriangle;
           renderContext.triangleLineWave += 0.0001 * timeSinceLastFrame;
@@ -124,14 +124,17 @@
           for (var i = dots.length - 1; i >= 0; i--) {
             var dot = dots[i];
             var alpha = dot.alpha;
-            var radgrad = ctx.createRadialGradient(X(dot.x), Y(dot.y), 0, X(dot.x), Y(dot.y), X(0.01));
-            radgrad.addColorStop(0, 'rgba(80, 80, 250, ' + alpha + ')');
-            radgrad.addColorStop(0.3 * dot.size + 0.1, 'rgba(80, 80, 250, ' + (alpha * 0.4) + ')');
-            radgrad.addColorStop(0.6, 'rgba(80, 80, 250, ' + (alpha * 0.2) + ')');
-            radgrad.addColorStop(1, 'rgba(80, 80, 250, 0)');
-            ctx.fillStyle = radgrad;
+            // var radgrad = ctx.createRadialGradient(X(dot.x), Y(dot.y), 0, X(dot.x), Y(dot.y), X(0.01));
+            // radgrad.addColorStop(0, 'rgba(80, 80, 250, ' + alpha + ')');
+            // radgrad.addColorStop(0.3 * dot.size + 0.1, 'rgba(80, 80, 250, ' + (alpha * 0.4) + ')');
+            // radgrad.addColorStop(0.6, 'rgba(80, 80, 250, ' + (alpha * 0.2) + ')');
+            // radgrad.addColorStop(1, 'rgba(80, 80, 250, 0)');
+            // ctx.fillStyle = radgrad;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#55F';
+            ctx.fillStyle = 'rgba(180, 180, 255, ' + alpha + ')';
             ctx.beginPath();
-            ctx.arc(X(dot.x), Y(dot.y), X(0.01), 0, 2 * Math.PI);
+            ctx.arc(X(dot.x), Y(dot.y), X(0.005 * dot.size + 0.005), 0, 2 * Math.PI);
             ctx.fill();
           }
           var prevTriangle;
@@ -204,8 +207,8 @@
               fnum = 0;
               var rc = canvasElement.getBoundingClientRect();
               if (rc.width != width || rc.height != height) {
-                width = canvasElement.width = Math.floor(rc.width / 2);
-                height = canvasElement.height = Math.floor(rc.height / 2);
+                width = canvasElement.width = rc.width;
+                height = canvasElement.height = rc.height;
               }
             }
             drawFrame(renderContext, width, height);
