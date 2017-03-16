@@ -204,8 +204,8 @@
               fnum = 0;
               var rc = canvasElement.getBoundingClientRect();
               if (rc.width != width || rc.height != height) {
-                width = canvasElement.width = rc.width;
-                height = canvasElement.height = rc.height;
+                width = canvasElement.width = Math.floor(rc.width / 2);
+                height = canvasElement.height = Math.floor(rc.height / 2);
               }
             }
             drawFrame(renderContext, width, height);
