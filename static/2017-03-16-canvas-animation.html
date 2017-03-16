@@ -106,16 +106,15 @@
          * Draw the scene state using canvas api
          */
         function drawFrame(renderContext, width, height) {
+          ctxWidth = width;
+          ctxHeightDelta = (height - width) / 2;
+
           var ctx = renderContext.drawContext;
-          function X(v) {
-            return v * width;
-          }
-          function Y(v) {
-            return v * width + (height - width) / 2;
-          }
           ctx.fillStyle = '#080518';
           ctx.fillRect(0, 0, width, height);
-          renderContext.bgDots.forEach(function (dot) {
+          var dots = renderContext.bgDots;
+          for (var i = dots.length - 1; i >= 0; i--) {
+            var dot = dots[i];
             var alpha = dot.alpha;
             var radgrad = ctx.createRadialGradient(X(dot.x), Y(dot.y), 0, X(dot.x), Y(dot.y), X(0.01));
             radgrad.addColorStop(0, 'rgba(80, 80, 250, ' + alpha + ')');
@@ -126,10 +125,14 @@
             ctx.beginPath();
             ctx.arc(X(dot.x), Y(dot.y), X(0.01), 0, 2 * Math.PI);
             ctx.fill();
-          });
+          }
           var prevTriangle;
-          renderContext.triangleLine.forEach(function (triangle) {
-            triangle.dots.forEach(function (dot, i) {
+          var triangleLine = renderContext.triangleLine;
+          for (var j = triangleLine.length - 1; j >= 0; j--) {
+            var triangle = triangleLine[j];
+            dots = triangle.dots;
+            for (var i = dots.length - 1; i >= 0; i--) {
+              var dot = dots[i];
               var alpha = Math.pow(triangle.extSize / 0.1, 2);
               if (alpha > 0.3) {
                 var radgrad = ctx.createRadialGradient(X(dot.x), Y(dot.y), 0, X(dot.x), Y(dot.y), X(0.005 * dot.zoom));
@@ -161,9 +164,18 @@
                 ctx.lineTo(X(nextDot.x), Y(nextDot.y));
                 ctx.stroke();
               }
-            });
+            }
             prevTriangle = triangle;
-          });
+          }
+        }
+        var ctxWidth, ctxHeightDelta;
+
+        function X(v) {
+          return v * ctxWidth;
+        }
+
+        function Y(v) {
+          return v * ctxWidth + ctxHeightDelta;
         }
 
         /**
@@ -173,11 +185,10 @@
           var nextFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function(cb) {
             setTimeout(cb, 30);
           };
-          var width = 0;
-          var height = 0;
           var renderContext = createRenderContext(canvasElement);
           var prevTime = Date.now();
           var fnum = 0xffffff;
+          var width, height;
           function requestRender() {
             if (!canvasElement.parentElement) {
               return;
