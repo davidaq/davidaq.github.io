@@ -140,6 +140,7 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
             var triangle = triangleLine[j];
             for (var i = 0; i < 3; i++) {
               var dot = triangle.dots[i];
+              var nextDot = triangle.dots[(i + 1) % 3];
               var alpha = Math.pow(triangle.extSize / 0.1, 3);
               if (alpha > 0.01) {
                 ctx.shadowBlur = 10;
@@ -148,8 +149,10 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
                 ctx.beginPath();
                 ctx.arc(X(dot.x), Y(dot.y), X(0.004), 0, 2 * Math.PI);
                 ctx.fill();
+              }
 
-                var nextDot = triangle.dots[(i + 1) % 3];
+              alpha *= (dot.z + nextDot.z + 0.1) / 2 / 0.1 * 0.9 + 0.1;
+              if (alpha > 0.01) {
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = '#55F';
                 ctx.strokeStyle = 'rgba(180, 180, 255, ' + alpha + ')';
@@ -159,8 +162,10 @@ Demo地址: [http://davidaq.com/static/2017-03-16-canvas-animation](http://david
                 ctx.stroke();
               }
               if (prevTriangle) {
-                ctx.strokeStyle = 'rgba(180, 180, 255, ' + Math.pow(triangle.extSize / 0.03, 2) + ')';
                 var nextDot = prevTriangle.dots[i];
+                alpha = Math.pow(triangle.extSize / 0.03, 2);
+                alpha *= (dot.z + nextDot.z + 0.1) / 2 / 0.1 * 0.9 + 0.1;
+                ctx.strokeStyle = 'rgba(180, 180, 255, ' + alpha + ')';
                 ctx.beginPath();
                 ctx.moveTo(X(dot.x), Y(dot.y));
                 ctx.lineTo(X(nextDot.x), Y(nextDot.y));
