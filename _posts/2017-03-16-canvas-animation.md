@@ -20,7 +20,7 @@ layout: post
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Animation: Spiral Triangle</title>
     <style>
-      html, body { height: 100%; padding: 0; margin: 0; background: #080518; overflow: hidden; }
+      html, body { height: 100%; padding: 0; margin: 0; background: #f80518; overflow: hidden; }
       canvas { width: 100%; height: 100%; }
       @media (min-width: 600px) {
         canvas { width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; }
@@ -46,25 +46,28 @@ layout: post
             triangleLineRotate: 0,
           };
           for (var i = 0; i < 15; i++) {
-            renderContext.bgDots.push({
-              y: Math.random() * 0.5,
-              x: Math.random(),
-              speed: Math.random() * 0.0001 + 0.0001,
-              size: Math.random(),
-            });
+            renderContext.bgDots.push(resetBgDot({}));
           }
           var triangleCount = 15;
           for (var i = 0; i <= triangleCount; i++) {
             var x = i / triangleCount * 1.08 - 0.04;
             renderContext.triangleLine.push({
               x: x,
-              y: 0.5,
+              y: 0.9,
               dots: [{}, {}, {}],
               rotate: x * 2 * Math.PI,
               size: 0.06,
             });
           }
           return renderContext;
+        }
+
+        function resetBgDot(dot) {
+          dot.y = 0.9;
+          dot.x = Math.random();
+          dot.speed = Math.random() * 0.00001 + 0.00005;
+          dot.size = Math.random();
+          return dot;
         }
 
         /**
@@ -77,16 +80,13 @@ layout: post
             var dot = dots[i];
             dot.y -= timeSinceLastFrame * dot.speed;
             dot.x += (dot.x - 0.5) * dot.speed * 30;
-            if (dot.y < 0.1 || dot.x < -0.01 || dot.x > 1.01 || (dot.y < 0.4 && dot.alpha < 0.1)) {
-              dot.y = 0.5;
-              dot.x = Math.random();
-              dot.speed = Math.random() * 0.0001 + 0.0001;
-              dot.size = Math.random();
+            if (dot.y < 0.1 || dot.x < -0.01 || dot.x > 1.01 || (dot.y < 0.8 && dot.alpha < 0.1)) {
+              resetBgDot(dot);
             }
-            dot.alpha = dot.y < 0.4 ? (dot.y - 0.3) / 0.1 : (0.5 - dot.y) / 0.1;
+            dot.alpha = dot.y < 0.8 ? (dot.y - 0.7) / 0.1 : (0.9 - dot.y) / 0.1;
           };
           var prevTriangle;
-          renderContext.triangleLineWave += 0.0003 * timeSinceLastFrame;
+          renderContext.triangleLineWave += 0.0001 * timeSinceLastFrame;
           if (renderContext.triangleLineWave > 2) {
             renderContext.triangleLineWave = 0;
           }
@@ -123,7 +123,7 @@ layout: post
          */
         function drawFrame(renderContext, width, height) {
           ctxWidth = width;
-          ctxHeightDelta = (height - width) / 2;
+          ctxHeightDelta = height - width;
 
           var ctx = renderContext.drawContext;
           ctx.fillStyle = '#080518';
