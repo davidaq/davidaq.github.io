@@ -58,7 +58,7 @@ layout: post
             var x = i / triangleCount * 1.08 - 0.04;
             renderContext.triangleLine.push({
               x: x,
-              y: 0.55,
+              y: 0.5,
               dots: [{}, {}, {}],
               rotate: x * 2 * Math.PI,
               size: 0.06,
@@ -78,12 +78,12 @@ layout: post
             dot.y -= timeSinceLastFrame * dot.speed;
             dot.x += (dot.x - 0.5) * dot.speed * 30;
             if (dot.y < 0.1 || dot.x < -0.01 || dot.x > 1.01 || (dot.y < 0.4 && dot.alpha < 0.1)) {
-              dot.y = 0.55;
+              dot.y = 0.5;
               dot.x = Math.random();
               dot.speed = Math.random() * 0.0001 + 0.0001;
               dot.size = Math.random();
             }
-            dot.alpha = dot.y < 0.4 ? (dot.y - 0.3) / 0.1 : (0.55 - dot.y) / 0.1;
+            dot.alpha = dot.y < 0.4 ? (dot.y - 0.3) / 0.1 : (0.5 - dot.y) / 0.1;
           };
           var prevTriangle;
           renderContext.triangleLineWave += 0.0003 * timeSinceLastFrame;
@@ -102,7 +102,7 @@ layout: post
             var triangle = triangleLine[j];
             triangle.rotate = triangleRotate;
             prevTriangle = triangle;
-            var triangeSize = triangle.size * Math.max(0.4, 1.2 * (1 - Math.abs(triangleLineWave - triangle.x) * 0.5));
+            var triangeSize = triangle.size * Math.pow(Math.max(0.5, 1.1 * (1 - Math.abs(triangleLineWave - triangle.x) * 0.5)), 2);
             triangleRotate += rotateStep;
             triangle.extSize = triangeSize;
             for (var i = 0; i < 3; i++) {
@@ -134,7 +134,7 @@ layout: post
             var alpha = dot.alpha;
             ctx.shadowBlur = 10;
             ctx.shadowColor = '#55F';
-            ctx.fillStyle = 'rgba(180, 180, 255, ' + alpha + ')';
+            ctx.fillStyle = 'rgba(120, 120, 200, ' + alpha + ')';
             ctx.beginPath();
             ctx.arc(X(dot.x), Y(dot.y), X(0.005 * dot.size + 0.005), 0, 2 * Math.PI);
             ctx.fill();
