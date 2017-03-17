@@ -20,7 +20,7 @@ layout: post
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Animation: Spiral Triangle</title>
     <style>
-      html, body { height: 100%; padding: 0; margin: 0; background: #f80518; overflow: hidden; }
+      html, body { height: 100%; padding: 0; margin: 0; background: #080518; overflow: hidden; }
       canvas { width: 100%; height: 100%; }
       @media (min-width: 600px) {
         canvas { width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; }
