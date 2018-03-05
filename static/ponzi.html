@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>旁氏骗局</title>
+  </head>
+  <body>
+    <script>
+      function createGameState () {
+        return {
+          debtList: [],
+          options: [],
+          round: 0,
+          cash: 0,
+          max: 0,
+        };
+      }
+      function generateUI (state) {
+        state.paused = false;
+        var $dom = document.createElement('div');
+        $dom.innerHTML = document.getElementById('template').innerHTML;
+        document.body.appendChild($dom);
+        state.$dom = $dom;
+        var $options = $dom.getElementsByClassName('choise');
+        [].forEach.call($options, function ($option, index) {
+          $option.addEventListener('click', function () {
+            if (state.paused || state.cash < 0) {
+              return;
+            }
+            state.paused = true;
+            selectOption(state, index);
+            updateUI(state);
+            setTimeout(function () {
+              state.paused = false;
+              completeRound(state);
+              updateUI(state);
+            }, 600);
+          });
+        });
+      }
+      function updateUI (state) {
+        state.$dom.getElementsByClassName('round')[0].innerHTML = state.round;
+        state.$dom.getElementsByClassName('max')[0].innerHTML = state.max;
+        var $cash = state.$dom.getElementsByClassName('cash')[0];
+        $cash.innerHTML = state.cash;
+        if (state.cash < 0) {
+          $cash.className += ' over';
+        }
+        var $options = state.$dom.getElementsByClassName('choise');
+        state.options.forEach(function (option, index) {
+          var $item = $options[index];
+          ['receive', 'duration', 'interest'].forEach(function (key) {
+            $item.getElementsByClassName(key)[0].innerHTML = option[key];
+          });
+          if (option.selected) {
+            $item.className = 'choise selected';
+          } else {
+            $item.className = 'choise';
+          }
+        });
+        var $debts = state.$dom.getElementsByClassName('debt');
+        var total = [];
+        [].forEach.call($debts, function ($debt) {
+          $debt.innerHTML = '';
+          total.push(0);
+        });
+        state.debtList.forEach(function (debt) {
+          $debts[debt.remain - 1].innerHTML += debt.receive + ' : <b>' + debt.interest + '</b>/' + debt.duration + '<br>';
+          total[debt.remain - 1] += debt.interest;
+        });
+        [].forEach.call($debts, function ($debt, index) {
+          $debt.innerHTML += '共€' + total[index];
+        });
+      }
+      function generateOptions (state) {
+        state.options = state.options.filter(function (v) {
+          return !v.selected;
+        });
+        while (state.options.length > 3) {
+          state.options.splice(Math.floor(Math.random() * state.options.length), 1);
+        }
+        while (state.options.length < 6) {
+          var receive = Math.floor(Math.random() * (10 + state.round)) + state.round * 5 + 8;
+          var duration = Math.floor(Math.random() * 3 + 3);
+          var interest = Math.floor((Math.random() * 0.2 + 0.1) * receive * duration);
+          state.options.push({
+            receive: receive,
+            duration: duration,
+            interest: interest,
+          });
+        }
+        state.options.sort(function (a, b) {
+          return a.receive - b.receive;
+        });
+      }
+      function selectOption (state, index) {
+        var selection = state.options[index];
+        selection.selected = true;
+        state.cash += selection.receive;
+        state.max = Math.max(state.cash, state.max);
+        state.debtList.push({
+          receive: selection.receive,
+          duration: selection.duration,
+          interest: selection.interest,
+          remain: selection.duration,
+        });
+      }
+      function completeRound (state) {
+        state.round++;
+        state.debtList.forEach(function (debt) {
+          debt.remain--;
+          if (debt.remain === 0) {
+            state.cash -= debt.interest;
+            debt.remain = debt.duration;
+          }
+        });
+        generateOptions(state);
+      }
+      function startGame () {
+        if (window.game) {
+          window.game.$dom.parentElement.removeChild(window.game.$dom);
+        }
+        window.game = createGameState();
+        generateUI(game);
+        generateOptions(game);
+        updateUI(game);
+      }
+      setTimeout(startGame, 100);
+    </script>
+    <style>
+    .row {
+      overflow: hidden;
+      zoom: 1;
+    }
+    .choise {
+      float: left;
+      width: 120px;
+      margin: 5px;
+      padding: 5px;
+      background: #EEF;
+      border: 1px solid #EEF;
+      border-radius: 5px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .choise.selected {
+      border: 1px solid red;
+    }
+    .choise:hover {
+      background: #DDE;
+      transition: background 0.3s;
+    }
+    #template {
+      display: none;
+    }
+    td {
+      vertical-align: top;
+      min-width: 100px;
+      text-align: center;
+    }
+    .over {
+      color: red;
+    }
+    .over::after {
+      content: ' 破产';
+    }
+    </style>
+    <div id="template">
+      <button onclick="startGame()">重新开始</button>
+      <h1>资金：€<span class="cash"></span> - 回合：<span class="round"></span> - 最高：€<span class="max"></span></h1>
+      <b>募资</b>
+      <div class="row">
+        <div class="choise">
+          <div>募集：€<span class="receive"></span></div>
+          <div>每<span class="duration"></span>回合还€<span class="interest"></span></div>
+        </div>
+        <div class="choise">
+          <div>募集：€<span class="receive"></span></div>
+          <div>每<span class="duration"></span>回合还€<span class="interest"></span></div>
+        </div>
+        <div class="choise">
+          <div>募集：€<span class="receive"></span></div>
+          <div>每<span class="duration"></span>回合还€<span class="interest"></span></div>
+        </div>
+        <div class="choise">
+          <div>募集：€<span class="receive"></span></div>
+          <div>每<span class="duration"></span>回合还€<span class="interest"></span></div>
+        </div>
+        <div class="choise">
+          <div>募集：€<span class="receive"></span></div>
+          <div>每<span class="duration"></span>回合还€<span class="interest"></span></div>
+        </div>
+        <div class="choise">
+          <div>募集：€<span class="receive"></span></div>
+          <div>每<span class="duration"></span>回合还€<span class="interest"></span></div>
+        </div>
+      </div>
+      <b>债务</b>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>
+              下回合
+            </th>
+            <th>
+              2回合后
+            </th>
+            <th>
+              3回合后
+            </th>
+            <th>
+              4回合后
+            </th>
+            <th>
+              5回合后
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="debt"></td>
+            <td class="debt"></td>
+            <td class="debt"></td>
+            <td class="debt"></td>
+            <td class="debt"></td>
+          </tr>
+        </tbody>
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
