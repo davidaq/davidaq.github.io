@@ -19,6 +19,7 @@ class PlayerAI {
     const seq = new Float32Array(BOARD_SIZE * BOARD_SIZE * 3);
     let i = 0;
     const candidates = {};
+    candidates[BOARD_SIZE / 2 + BOARD_SIZE * BOARD_SIZE / 2] = 1;
     game.board.forEach((line, y) => line.forEach((v, x) => {
       if (v === EMPTY) {
         seq[i++] = 1;
@@ -30,7 +31,7 @@ class PlayerAI {
             const cx = x + dx;
             const cy = y + dy;
             if (cx >= 0 && cx < BOARD_SIZE && cy >=0 && cy < BOARD_SIZE) {
-              candidates[cx * 3 + cy * BOARD_SIZE] = 1;
+              candidates[cx + cy * BOARD_SIZE] = 1;
             }
           }
         }
@@ -48,20 +49,21 @@ class PlayerAI {
     let max = false;
     let best = false;
     Object.keys(candidates).forEach(k => {
-      let j = k | 0;
+      let j = (k | 0) * 3;
       if (seq[j] > 0.5) {
         seq[j] = 0;
         seq[j + 1] = 1;
         const value = this.evaluate(seq);
         if (max === false || value > max) {
           max = value;
-          best = i;
+          best = j;
         }
         seq[j] = 1;
         seq[j + 1] = 0;
       }
     });
     if (best !== false) {
+      best /= 3;
       const x = best % BOARD_SIZE;
       const y = Math.floor(best / BOARD_SIZE);
       callback(x, y);
