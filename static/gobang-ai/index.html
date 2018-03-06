@@ -7,32 +7,58 @@
   </head>
   <body>
     <div id="gameboard"></div>
+    <textarea id="core"></textarea>
     <script src="game.js"></script>
     <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
-    <script src="ai-random.js"></script>
     <script>
+      window.core = createRandomCore();
+      window.$core = document.getElementById('core');
+      $core.value = JSON.stringify(core);
+      let debounce;
+      const assign = (target, from) => {
+        Object.keys(target).forEach(key => {
+          if (target[key] && typeof target[key] === 'object') {
+            assign(target[key], from[key]);
+          } else {
+            target[key] = from[key];
+          }
+        });
+      };
+      $core.addEventListener('input', () => {
+        if (debounce) {
+          return;
+        }
+        debounce = setTimeout(() => {
+          debounce = null;
+          const read = JSON.parse($core.value);
+          assign(core, read);
+        }, 100);
+      });
       function start (isBlack) {
-        // var players = [new PlayerAI(new AiRandom())];
-        var human = new PlayerUI(document.getElementById('gameboard'));
-        // if (isBlack) {
-        //   players.unshift(human);
-        // } else {
-        //   players.push(human);
-        // }
-        players = [human, human];
+        const players = [new PlayerAI(core)];
+        const human = new PlayerUI(document.getElementById('gameboard'));
+        if (isBlack) {
+          players.unshift(human);
+        } else {
+          players.push(human);
+        }
         window.game = new Game(players);
         game.onEnd = (winner) => {
-          if (winner === BLACK) {
-            alert('黑赢');
-          } else if (winner === WHITE) {
-            alert('白赢');
-          } else {
-            alert('平局');
-          }
+          setTimeout(() => {
+            if (winner === BLACK) {
+              alert('黑赢');
+            } else if (winner === WHITE) {
+              alert('白赢');
+            } else {
+              alert('平局');
+            }
+          }, 10);
         };
+        game.play();
       }
       start(true);
     </script>
   </body>
 </html>
+

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf=8">
+    <meta name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+    <title>五子棋AI</title>
+    <style>
+      body {
+        break-word: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gameboard"></div>
+    <script src="game.js"></script>
+    <script src="player-ai.js"></script>
+    <script>
+      const HORDE_SIZE = 7;
+      const horde = [];
+      (async () => {
+        let epoch = 0;
+        let maxRounds = 20;
+        while (true) {
+          await new Promise(r => setTimeout(r, 100));
+          while (horde.length < HORDE_SIZE) {
+            horde.push({
+              core: createRandomCore(),
+            });
+          }
+          const winnerStat = [0, 0, 0];
+          horde.forEach(orc => {
+            orc.score = 0;
+          });
+          let allTie = true;
+          for (let i = 0; i < HORDE_SIZE; i++) {
+            for (let j = 0; j < HORDE_SIZE; j++) {
+              if (i === j) {
+                continue;
+              }
+              const game = new Game([
+                new PlayerAI(horde[i].core),
+                new PlayerAI(horde[j].core),
+              ]);
+              game.remainRound = maxRounds;
+              game.onEnd = (result) => {
+                winnerStat[result]++;
+                if (result === TIE) {
+                  horde[i].score += 1;
+                  horde[j].score += 1;
+                } else if (result === BLACK) {
+                  allTie = false;
+                  horde[i].score += 10;
+                } else {
+                  allTie = false;
+                  horde[j].score += 10;
+                }
+              };
+              game.play();
+            }
+            if (i % 3 === 0) {
+              await new Promise(r => setTimeout(r, 10));
+            }
+          }
+          epoch++;
+          console.log('epoch', epoch, horde.map(v => v.score), maxRounds);
+          if (allTie) {
+            maxRounds *= 2;
+          } else if (maxRounds > 10) {
+            maxRounds -= 5;
+          }
+          horde.sort((a, b) => b.score - a.score);
+          document.body.innerHTML = JSON.stringify(horde[0].core);
+          const preserve = horde.slice(0);
+          horde.length = 0;
+          horde.push(preserve[0]);
+          horde.push(preserve[1]);
+          horde.push(preserve[2]);
+          horde.push(preserve[3]);
+          horde.push({
+            core: inheritCore(crossCore(preserve[0].core, preserve[1].core)),
+          });
+          horde.push({
+            core: inheritCore(crossCore(preserve[0].core, preserve[2].core)),
+          });
+          horde.push({
+            core: inheritCore(crossCore(preserve[1].core, preserve[2].core)),
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
+

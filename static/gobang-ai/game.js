@@ -19,10 +19,9 @@ class Game {
     for (let i = 0; i < BOARD_SIZE; i++) {
       this.board.push(line.slice(0));
     }
-    this.getPlayerDecision();
   }
 
-  getPlayerDecision () {
+  play () {
     this.players[this.currentPlayer - 1].decide(this, (x, y) => {
       this.remainRound--;
       this.board[y][x] = this.currentPlayer;
@@ -33,7 +32,7 @@ class Game {
         } else {
           this.currentPlayer = BLACK;
         }
-        this.getPlayerDecision();
+        this.play();
       }
     });
   }
