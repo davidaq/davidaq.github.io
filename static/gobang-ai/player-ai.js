@@ -19,7 +19,7 @@ class PlayerAI {
     const seq = new Float32Array(BOARD_SIZE * BOARD_SIZE * 3);
     let i = 0;
     const candidates = {};
-    candidates[BOARD_SIZE / 2 + BOARD_SIZE * BOARD_SIZE / 2] = 1;
+    candidates[BOARD_SIZE * BOARD_SIZE / 2] = 1;
     game.board.forEach((line, y) => line.forEach((v, x) => {
       if (v === EMPTY) {
         seq[i++] = 1;
