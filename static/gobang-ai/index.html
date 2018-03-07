@@ -13,26 +13,19 @@
     <script src="player-ui.js"></script>
     <script>
       window.core = createRandomCore();
+      try {
+        core = JSON.parse(localStorage.goBangCore);
+      } catch (err) {}
       window.$core = document.getElementById('core');
       $core.value = JSON.stringify(core);
       let debounce;
-      const assign = (target, from) => {
-        Object.keys(target).forEach(key => {
-          if (target[key] && typeof target[key] === 'object') {
-            assign(target[key], from[key]);
-          } else {
-            target[key] = from[key];
-          }
-        });
-      };
       $core.addEventListener('input', () => {
         if (debounce) {
           return;
         }
         debounce = setTimeout(() => {
           debounce = null;
-          const read = JSON.parse($core.value);
-          assign(core, read);
+          core = JSON.parse($core.value);
         }, 100);
       });
       function start (isBlack) {

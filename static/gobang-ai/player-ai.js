@@ -78,8 +78,8 @@ class PlayerAI {
 
 function createRandomCore () {
   return [
-    nnLayer(BOARD_SIZE * BOARD_SIZE * 3, BOARD_SIZE),
-    nnLayer(BOARD_SIZE, 1),
+    nnLayer(BOARD_SIZE * BOARD_SIZE * 3, BOARD_SIZE * 5),
+    nnLayer(BOARD_SIZE * 5, 1),
   ];
 }
 
@@ -99,12 +99,12 @@ function crossCore (parentA, parentB) {
 
 function nnLayer (inSize, outSize) {
   const ret = {
-    bias: new Float32Array(outSize),
+    bias: [],
     weight: [],
   };
   for (let i = 0 | 0; i < outSize; i++) {
     ret.bias[i] = Math.random();
-    const oWeight = new Float32Array(inSize);
+    const oWeight = [];
     ret.weight.push(oWeight);
     for (let j = 0; j < inSize; j++) {
       oWeight[j] = Math.random();
@@ -116,7 +116,7 @@ function nnLayer (inSize, outSize) {
 function inheritLayer (parent) {
   return {
     bias: mutate(parent.bias, 0.1),
-    weight: parent.weight.map(v => mutate(v, 0.1)),
+    weight: parent.weight.map(v => mutate(v, 0.2)),
   };
 }
 

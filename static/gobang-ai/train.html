@@ -15,13 +15,18 @@
     <script src="game.js"></script>
     <script src="player-ai.js"></script>
     <script>
-      const HORDE_SIZE = 7;
-      const horde = [];
+      const HORDE_SIZE = 12;
+      let horde = [];
+      try {
+        horde.push({
+          core: JSON.parse(localStorage.goBangCore),
+        });
+      } catch (err) {}
       (async () => {
         let epoch = 0;
         let maxRounds = 20;
         while (true) {
-          await new Promise(r => setTimeout(r, 100));
+          await new Promise(r => setTimeout(r, 10));
           while (horde.length < HORDE_SIZE) {
             horde.push({
               core: createRandomCore(),
@@ -29,62 +34,62 @@
           }
           const winnerStat = [0, 0, 0];
           horde.forEach(orc => {
-            orc.score = 0;
+            orc.survive = true;
           });
-          let allTie = true;
-          for (let i = 0; i < HORDE_SIZE; i++) {
-            for (let j = 0; j < HORDE_SIZE; j++) {
-              if (i === j) {
-                continue;
-              }
-              const game = new Game([
-                new PlayerAI(horde[i].core),
-                new PlayerAI(horde[j].core),
-              ]);
-              game.remainRound = maxRounds;
-              game.onEnd = (result) => {
-                winnerStat[result]++;
-                if (result === TIE) {
-                  horde[i].score += 1;
-                  horde[j].score += 1;
-                } else if (result === BLACK) {
-                  allTie = false;
-                  horde[i].score += 10;
-                } else {
-                  allTie = false;
-                  horde[j].score += 10;
-                }
-              };
-              game.play();
-            }
-            if (i % 3 === 0) {
-              await new Promise(r => setTimeout(r, 10));
-            }
+          const index = horde.map((v, i) => i);
+          const vs = [];
+          while (index.length > 1) {
+            const a = index.splice(Math.floor(Math.random() * index.length), 1)[0];
+            const b = index.splice(Math.floor(Math.random() * index.length), 1)[0];
+            vs.push([a, b]);
           }
+          const play = (black, white) => {
+            const game = new Game([black, white]);
+            game.remainRound = Math.min(game.remainRound, maxRounds);
+            game.onEnd = (result) => {
+              winnerStat[result]++;
+              if (result === TIE) {
+                black.score += 1;
+                white.score += 1;
+              } else if (result === BLACK) {
+                black.score += 2;
+              } else {
+                white.score += 2;
+              }
+            };
+            game.play();
+          };
+          for (let i = 0; i < vs.length; i++) {
+            const [a, b] = vs[i];
+            const pa = new PlayerAI(horde[a].core);
+            const pb = new PlayerAI(horde[b].core);
+            pa.score = 0;
+            pb.score = 0;
+            play(pa, pb);
+            play(pb, pa);
+            horde[a].survive = pa.score > 2;
+            horde[b].survive = pb.score > 2;
+            await new Promise(r => setTimeout(r, 10));
+          }
+          
           epoch++;
-          console.log('epoch', epoch, horde.map(v => v.score), maxRounds);
-          if (allTie) {
+          console.log('epoch', epoch, horde.map(v => v.survive), maxRounds);
+          if (winnerStat[TIE] / 2 > winnerStat[WHITE] + winnerStat[BLACK]) {
             maxRounds *= 2;
           } else if (maxRounds > 10) {
+            horde = horde.filter(orc => orc.survive);
             maxRounds -= 5;
           }
-          horde.sort((a, b) => b.score - a.score);
-          document.body.innerHTML = JSON.stringify(horde[0].core);
-          const preserve = horde.slice(0);
-          horde.length = 0;
-          horde.push(preserve[0]);
-          horde.push(preserve[1]);
-          horde.push(preserve[2]);
-          horde.push(preserve[3]);
-          horde.push({
-            core: inheritCore(crossCore(preserve[0].core, preserve[1].core)),
-          });
-          horde.push({
-            core: inheritCore(crossCore(preserve[0].core, preserve[2].core)),
-          });
-          horde.push({
-            core: inheritCore(crossCore(preserve[1].core, preserve[2].core)),
-          });
+          localStorage.goBangCore = JSON.stringify(horde[0].core);
+          document.body.innerHTML = localStorage.goBangCore;
+          const remain = horde.length;
+          while (horde.length < HORDE_SIZE) {
+            const pa = Math.floor(Math.random() * remain);
+            const pb = Math.floor(Math.random() * remain);
+            horde.push({
+              core: inheritCore(crossCore(horde[pa].core, horde[pb].core)),
+            });
+          }
         }
       })();
     </script>
