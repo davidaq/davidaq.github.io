@@ -7,10 +7,13 @@ class PlayerUI {
 
   decide (game, callback) {
     this.$dom.innerHTML = '';
+    const boardWidth = CELL_SIZE * (BOARD_SIZE - 0.25)
     Object.assign(this.$dom.style, {
-      width: `${CELL_SIZE * (BOARD_SIZE - 0.25)}px`,
-      height: `${CELL_SIZE * (BOARD_SIZE - 0.25)}px`,
+      width: `${boardWidth}px`,
+      height: `${boardWidth}px`,
       background: '#9D9',
+      transform: `scale(${(Math.min(window.innerWidth, window.innerHeight) - 30) / boardWidth})`,
+      transformOrigin: '0 0'
     });
     for (let y = 0; y < BOARD_SIZE; y++) {
       const $row = document.createElement('div');

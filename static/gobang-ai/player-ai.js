@@ -16,56 +16,80 @@ class PlayerAI {
   }
 
   decide (game, callback) {
-    const seq = new Float32Array(BOARD_SIZE * BOARD_SIZE * 3);
+    const seq = this.coreInput || new Float32Array(BOARD_SIZE * BOARD_SIZE * 2);
+    this.coreInput = seq;
     let i = 0;
     const candidates = {};
-    candidates[BOARD_SIZE * BOARD_SIZE / 2] = 1;
     game.board.forEach((line, y) => line.forEach((v, x) => {
+      //seq[i++] = 1.0;
       if (v === EMPTY) {
-        seq[i++] = 1;
-        seq[i++] = 0;
-        seq[i++] = 0;
+        seq[i++] = 0.0;
+        seq[i++] = 0.0;
       } else {
         for (let dy = -2; dy <= 2; dy++) {
           for (let dx = -2; dx <= 2; dx++) {
             const cx = x + dx;
             const cy = y + dy;
             if (cx >= 0 && cx < BOARD_SIZE && cy >=0 && cy < BOARD_SIZE) {
-              candidates[cx + cy * BOARD_SIZE] = 1;
+              if (game.board[cy][cx] === EMPTY) {
+                candidates[cx + cy * BOARD_SIZE] = 1;
+              }
             }
           }
         }
         if (v === game.currentPlayer) {
-          seq[i++] = 0;
-          seq[i++] = 1;
-          seq[i++] = 0;
+          seq[i++] = 1.0;
+          seq[i++] = 0.0;
         } else {
-          seq[i++] = 0;
-          seq[i++] = 0;
-          seq[i++] = 1;
+          seq[i++] = 0.0;
+          seq[i++] = 1.0;
         }
       }
     }));
-    let max = false;
-    let best = false;
+    if (game.prevPlay) {
+      const [cx, cy] = game.prevPlay;
+      //seq[(cx + cy * BOARD_SIZE) * 3] = 0.0;
+    } else {
+      candidates[BOARD_SIZE * BOARD_SIZE / 2] = 1;
+    }
+    let sum = 0;
+    const choice = [];
     Object.keys(candidates).forEach(k => {
-      let j = (k | 0) * 3;
-      if (seq[j] > 0.5) {
-        seq[j] = 0;
-        seq[j + 1] = 1;
-        const value = this.evaluate(seq);
-        if (max === false || value > max) {
-          max = value;
-          best = j;
-        }
-        seq[j] = 1;
-        seq[j + 1] = 0;
+      k = k | 0;
+      let j = k * 2;
+      seq[j] = 0;
+      seq[j + 1] = 1;
+      const value = this.evaluate(seq) + 0.0001;
+      if (value === NaN) {
+        throw new Error('Evaluated NaN');
       }
+      choice.push({
+        key: k,
+        value,
+      });
+      sum += value;
+      seq[j] = 1;
+      seq[j + 1] = 0;
     });
-    if (best !== false) {
-      best /= 3;
-      const x = best % BOARD_SIZE;
-      const y = Math.floor(best / BOARD_SIZE);
+    if (choice.length > 0) {
+      choice.sort((a, b) => b.value - a.value);
+      let decision = choice[0];
+      let watermark = 0;
+      choice.forEach(v => {
+        const propability = v.value / sum;
+        watermark += propability;
+        v.propability = propability;
+        v.watermark = watermark;
+      });
+      const r = Math.random();
+      //for (let i = 0; i < choice.length; i++) {
+      //  if (r < choice[i].watermark) {
+      //    decision = choice[i];
+      //    break;
+      //  }
+      //}
+      const x = decision.key % BOARD_SIZE;
+      const y = Math.floor(decision.key / BOARD_SIZE);
       callback(x, y);
     } else {
       throw new Error('No place left to play');
@@ -78,7 +102,7 @@ class PlayerAI {
 
 function createRandomCore () {
   return [
-    nnLayer(BOARD_SIZE * BOARD_SIZE * 3, BOARD_SIZE * 5),
+    nnLayer(BOARD_SIZE * BOARD_SIZE * 2, BOARD_SIZE * 5),
     nnLayer(BOARD_SIZE * 5, 1),
   ];
 }
@@ -114,16 +138,21 @@ function nnLayer (inSize, outSize) {
 }
 
 function inheritLayer (parent) {
-  return {
-    bias: mutate(parent.bias, 0.1),
-    weight: parent.weight.map(v => mutate(v, 0.2)),
-  };
+  if (Math.random() < 0.5) {
+    return {
+      bias: mutate(parent.bias, 0.1),
+      weight: parent.weight.map(v => mutate(v, 0.1)),
+    };
+  } else {
+    return parent;
+  }
 }
 
 function crossLayer (parentA, parentB) {
+  const selection = parentA.bias.map(v => Math.random());
   return {
-    bias: cross(parentA.bias, parentB.bias),
-    weight: cross(parentA.weight, parentB.weight),
+    bias: cross(parentA.bias, parentB.bias, selection),
+    weight: cross(parentA.weight, parentB.weight, selection),
   };
 }
 
@@ -132,18 +161,19 @@ function mutate (arr, thresh) {
     let d = Math.random();
     if (d < thresh) {
       v += d - thresh / 2;
+      if (v < 0) {
+        v = 0;
+      } else if (v > 1) {
+        v = 1;
+      }
     }
     return v;
   });
 }
 
-const crossCache = [];
-function cross (arr1, arr2) {
+function cross (arr1, arr2, crossSel) {
   return arr1.map((v, i) => {
-    if (i <= crossCache.length) {
-      crossCache.push(Math.random());
-    }
-    if (crossCore[i] < 0.5) {
+    if (crossSel[i] < 0.5) {
       return v;
     } else {
       return arr2[i];

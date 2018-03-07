@@ -14,25 +14,32 @@
     <div id="gameboard"></div>
     <script src="game.js"></script>
     <script src="player-ai.js"></script>
+    <script src="player-ui.js"></script>
     <script>
-      const HORDE_SIZE = 12;
+      const HORDE_SIZE = 16;
       let horde = [];
       try {
         horde.push({
           core: JSON.parse(localStorage.goBangCore),
         });
       } catch (err) {}
+      horde.push({
+        core: createRandomCore(),
+      });
+      const ui = new PlayerUI(document.getElementById('gameboard'));
       (async () => {
         let epoch = 0;
         let maxRounds = 20;
         while (true) {
-          await new Promise(r => setTimeout(r, 10));
+          await new Promise(r => setTimeout(r, 5));
           while (horde.length < HORDE_SIZE) {
+            const pa = Math.floor(Math.random() * horde.length);
+            const pb = Math.floor(Math.random() * horde.length);
             horde.push({
-              core: createRandomCore(),
+              //core: inheritCore(crossCore(horde[pa].core, horde[pb].core)),
+              core: inheritCore(horde[pa].core),
             });
           }
-          const winnerStat = [0, 0, 0];
           horde.forEach(orc => {
             orc.survive = true;
           });
@@ -43,14 +50,15 @@
             const b = index.splice(Math.floor(Math.random() * index.length), 1)[0];
             vs.push([a, b]);
           }
+          let lastGame = null;
           const play = (black, white) => {
             const game = new Game([black, white]);
             game.remainRound = Math.min(game.remainRound, maxRounds);
             game.onEnd = (result) => {
-              winnerStat[result]++;
               if (result === TIE) {
                 black.score += 1;
                 white.score += 1;
+                lastGame = game;
               } else if (result === BLACK) {
                 black.score += 2;
               } else {
@@ -62,34 +70,41 @@
           for (let i = 0; i < vs.length; i++) {
             const [a, b] = vs[i];
             const pa = new PlayerAI(horde[a].core);
-            const pb = new PlayerAI(horde[b].core);
+            // const pb = new PlayerAI(horde[b].core);
+            const pb = {
+              decide (game, callback) {
+                for (let y = 0; y < BOARD_SIZE; y++) {
+                  for (let x = 0; x < BOARD_SIZE; x++) {
+                    if (game.board[y][x] === EMPTY) {
+                      callback(x, y);
+                      return
+                    }
+                  }
+                }
+              },
+              end () {}
+            }
             pa.score = 0;
             pb.score = 0;
             play(pa, pb);
+            await new Promise(r => setTimeout(r, 5));
             play(pb, pa);
-            horde[a].survive = pa.score > 2;
-            horde[b].survive = pb.score > 2;
-            await new Promise(r => setTimeout(r, 10));
+            await new Promise(r => setTimeout(r, 5));
+            horde[a].survive = pa.score > 0;
+            // horde[b].survive = pb.score > 2;
           }
           
           epoch++;
+          lastGame && ui.end(lastGame);
           console.log('epoch', epoch, horde.map(v => v.survive), maxRounds);
-          if (winnerStat[TIE] / 2 > winnerStat[WHITE] + winnerStat[BLACK]) {
-            maxRounds *= 2;
+          const remain = horde.filter(orc => orc.survive);
+          if (remain.length < 2) {
+            maxRounds += 20;
           } else if (maxRounds > 10) {
-            horde = horde.filter(orc => orc.survive);
             maxRounds -= 5;
+            horde = remain;
           }
           localStorage.goBangCore = JSON.stringify(horde[0].core);
-          document.body.innerHTML = localStorage.goBangCore;
-          const remain = horde.length;
-          while (horde.length < HORDE_SIZE) {
-            const pa = Math.floor(Math.random() * remain);
-            const pb = Math.floor(Math.random() * remain);
-            horde.push({
-              core: inheritCore(crossCore(horde[pa].core, horde[pb].core)),
-            });
-          }
         }
       })();
     </script>

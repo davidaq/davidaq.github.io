@@ -9,7 +9,7 @@ class Game {
   constructor (players) {
     this.players = players;
     this.currentPlayer = BLACK;
-    this.prevPlay = [-1, -1];
+    this.prevPlay = null;
     this.remainRound = BOARD_SIZE * BOARD_SIZE;
     this.board = [];
     var line = [];
