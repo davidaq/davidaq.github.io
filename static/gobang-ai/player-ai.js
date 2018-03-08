@@ -14,10 +14,10 @@ class PlayerAI {
       forTraining: () => this.learn,
     };
     const spec = {
-      alpha: 0.01,
+      alpha: 0.001,
       epsilon: this.learn ? 0.3 : 0,
       gamma: 0.8,
-      num_hidden_units: BOARD_SIZE * 5,
+      num_hidden_units: BOARD_SIZE * BOARD_SIZE,
       tderror_clamp: 2,
       experience_size: 50000,
     };
