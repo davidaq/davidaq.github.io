@@ -20,28 +20,20 @@
       const HORDE_SIZE = 10;
       let core;
       try {
-        //core = JSON.parse(localStorage.goBangCore);
+        core = JSON.parse(localStorage.goBangCore);
       } catch (err) {}
       const ui = new PlayerUI(document.getElementById('gameboard'));
       (async () => {
         let epoch = 0;
-        let maxRounds = 30;
         const ai = [new PlayerAI(core, true), new PlayerAI(core, true)];
         while (true) {
           const game = new Game(ai, true);
-          game.remainRound = Math.min(game.remainRound, maxRounds);
           await new Promise(r => {
             game.onReward = (side, reward) => {
               ai[side - 1].reward(reward);
               ai[2 - side].reward(-reward / 2);
             };
             game.onEnd = (result) => {
-              if (result === TIE) {
-                maxRounds += 10;
-                game.isTie = true;
-              } else if (maxRounds > 10) {
-                maxRounds -= 5;
-              }
               if (!core || result !== TIE) {
                 result = Math.max(0, result - 1);
                 core = ai[result].getCore();
@@ -54,7 +46,7 @@
           if (epoch % 5 === 0) {
             ui.end(game);
             localStorage.goBangCore = JSON.stringify(core);
-            console.log(epoch, maxRounds);
+            console.log(epoch);
             await new Promise(r => setTimeout(r, 1));
           }
         }

@@ -52,7 +52,7 @@ class Game {
       const [dx, dy] = lines[i];
       let count = 1;
       let open = 0;
-      const check = (dir) => {
+      const check = (dir, side) => {
         for (let j = 1; j < 5; j++) {
           var cx = x - dx * j * dir;
           var cy = y - dy * j * dir;
@@ -61,15 +61,15 @@ class Game {
           } else if (this.board[cy][cx] === EMPTY) {
             open++;
             break;
-          } else if (this.board[cy][cx] === this.currentPlayer) {
+          } else if (this.board[cy][cx] === side) {
             count++;
           } else {
             break;
           }
         }
       }
-      check(1);
-      check(-1);
+      check(1, this.currentPlayer);
+      check(-1, this.currentPlayer);
       if (count >= 4) {
         this.isWin = true;
         this.onReward && this.onReward(this.currentPlayer, 5000);
@@ -93,6 +93,17 @@ class Game {
           } else if (open === 1) {
             reward += 10;
           }
+        }
+        count = 0;
+        open = 0;
+        check(1, 2 - this.currentPlayer);
+        check(-1, 2 - this.currentPlayer);
+        if (count == 2) {
+          if (open > 0) {
+            reward += 30;
+          }
+        } else if (count >= 3) {
+          reward += 30;
         }
       }
     }

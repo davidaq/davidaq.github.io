@@ -8,17 +8,13 @@ class PlayerAI {
 
   initCore (json) {
     const env = {
-      getNumStates () {
-        return BOARD_SIZE * BOARD_SIZE * 3;
-      },
-      getMaxNumActions () {
-        return BOARD_SIZE * BOARD_SIZE;
-      },
+      getNumStates: () => BOARD_SIZE * BOARD_SIZE * 3,
+      getMaxNumActions: () => BOARD_SIZE * BOARD_SIZE,
     };
     const spec = {
       alpha: 0.01,
-      epsilon: this.learn ? 0.2 : 0,
-      gamma: 0.5,
+      epsilon: this.learn ? 0.1 : 0,
+      gamma: 0.7,
       num_hidden_units: BOARD_SIZE * 5,
       experience_add_every: 1,
       experience_size: 1000,
