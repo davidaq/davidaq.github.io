@@ -655,6 +655,11 @@ DQNAgent.prototype = {
     this.net.b1 = new R.Mat(this.nh, 1, 0, 0.01);
     this.net.W2 = new R.RandMat(this.na, this.nh, 0, 0.01);
     this.net.b2 = new R.Mat(this.na, 1, 0, 0.01);
+    
+    this.targetNet = this.net;
+    if (this.env.forTraining && this.env.forTraining()) {
+      this.updateTargetNet();
+    }
 
     this.exp = []; // experience
     this.expi = 0; // where to insert
@@ -668,6 +673,10 @@ DQNAgent.prototype = {
     this.a1 = null;
 
     this.tderror = 0; // for visualization only...
+  },
+  updateTargetNet () {
+    console.log('update target');
+    this.targetNet = R.netFromJSON(R.netToJSON(this.net));
   },
   toJSON: function() {
     // save function
@@ -693,18 +702,33 @@ DQNAgent.prototype = {
     this.lastG = G; // back this up. Kind of hacky isn't it
     return a2mat;
   },
-  act: function(slist) {
+  act: function(slist, a) {
     // convert to a Mat column vector
     var s = new R.Mat(this.ns, 1);
     s.setFrom(slist);
 
     // epsilon greedy policy
-    if(Math.random() < this.epsilon) {
-      var a = randi(0, this.na);
-    } else {
-      // greedy wrt Q function
-      var amat = this.forwardQ(this.net, s, false);
-      var a = R.maxi(amat.w); // returns index of argmax action
+    if (typeof a === 'undefined') {
+      if(Math.random() < this.epsilon) {
+        var a = 0;
+        while (true) {
+          a = randi(0, this.na);
+          if (this.env.isActionPossible(a)) {
+            break;
+          }
+        }
+      } else {
+        // greedy wrt Q function
+        var amat = this.forwardQ(this.net, s, false);
+        var a = -1;
+        for (var i = 0; i < amat.w.length; i++) {
+          if (this.env.isActionPossible(i)) {
+            if (a === -1 || amat.w[i] > amat.w[a]) {
+              a = i;
+            }
+          }
+        }
+      }
     }
 
     // shift state memory
@@ -744,8 +768,12 @@ DQNAgent.prototype = {
     // want: Q(s,a) = r + gamma * max_a' Q(s',a')
 
     // compute the target Q value
-    var tmat = this.forwardQ(this.net, s1, false);
-    var qmax = r0 + this.gamma * tmat.w[R.maxi(tmat.w)];
+    var qmax = r0;
+    if (s1) {
+      var atmat = this.forwardQ(this.net, s1, false);
+      var vtmat = this.forwardQ(this.targetNet, s1, false);
+      qmax += this.gamma * vtmat.w[R.maxi(atmat.w)];
+    }
 
     // now predict
     var pred = this.forwardQ(this.net, s0, true);
@@ -762,6 +790,14 @@ DQNAgent.prototype = {
     // update net
     R.updateNet(this.net, this.alpha);
     return tderror;
+  },
+  endRound: function() {
+    if (this.t > 1000) {
+      this.t = 0;
+      this.updateTargetNet();
+    }
+    this.learnFromTuple(this.s0, this.a0, this.r0);
+    this.r0 = null;
   }
 }
 

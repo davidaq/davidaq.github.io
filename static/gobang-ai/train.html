@@ -6,7 +6,7 @@
     <title>五子棋AI</title>
     <style>
       body {
-        break-word: break-all;
+        word-break: break-all;
       }
     </style>
   </head>
@@ -25,30 +25,29 @@
       const ui = new PlayerUI(document.getElementById('gameboard'));
       (async () => {
         let epoch = 0;
-        const ai = [new PlayerAI(core, true), new PlayerAI(core, true)];
+        const learner = new PlayerAI(core, true);
         while (true) {
+          const ai = [learner, learner];
+          ai[Math.random() < 0.5 ? 0 : 1] = new PlayerAI(core, false);
           const game = new Game(ai, true);
           await new Promise(r => {
             game.onReward = (side, reward) => {
               ai[side - 1].reward(reward);
-              ai[2 - side].reward(-reward / 2);
+              if (reward > 0) {
+                ai[2 - side].reward(-reward * 0.2);
+              }
             };
             game.onEnd = (result) => {
-              if (!core || result !== TIE) {
-                result = Math.max(0, result - 1);
-                core = ai[result].getCore();
-              }
               r();
             };
             game.play();
           });
           epoch++;
-          if (epoch % 5 === 0) {
-            ui.end(game);
-            localStorage.goBangCore = JSON.stringify(core);
-            console.log(epoch);
-            await new Promise(r => setTimeout(r, 1));
-          }
+          ui.end(game);
+          core = learner.getCore();
+          localStorage.goBangCore = JSON.stringify(core);
+          console.log(epoch);
+          await new Promise(r => setTimeout(r, 1));
         }
       })();
     </script>
