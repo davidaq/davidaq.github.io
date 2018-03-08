@@ -16,7 +16,7 @@
     <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
     <script>
-      const HORDE_SIZE = 16;
+      const HORDE_SIZE = 10;
       let horde = [];
       try {
         horde.push(JSON.parse(localStorage.goBangCore));
@@ -25,79 +25,49 @@
       const ui = new PlayerUI(document.getElementById('gameboard'));
       (async () => {
         let epoch = 0;
-        let maxRounds = 20;
+        let maxRounds = 30;
+        let champ = horde[0];
+        champ.score = 0;
         while (true) {
-          await new Promise(r => setTimeout(r, 5));
           while (horde.length < HORDE_SIZE) {
             const pa = Math.floor(Math.random() * horde.length);
             const pb = Math.floor(Math.random() * horde.length);
             horde.push(inheritCore(crossCore(horde[pa], horde[pb])))
           }
-          horde.forEach(orc => {
-            orc.survive = true;
-          });
-          const index = horde.map((v, i) => i);
-          const vs = [];
-          while (index.length > 1) {
-            const a = index.splice(Math.floor(Math.random() * index.length), 1)[0];
-            const b = index.splice(Math.floor(Math.random() * index.length), 1)[0];
-            vs.push([a, b]);
-          }
-          let lastGame = null;
-          const play = (black, white) => {
-            const game = new Game([black, white]);
-            game.remainRound = Math.min(game.remainRound, maxRounds);
-            game.onEnd = (result) => {
-              if (result === TIE) {
-                black.score += 1;
-                white.score += 1;
-                lastGame = game;
-              } else if (result === BLACK) {
-                black.score += 2;
-              } else {
-                white.score += 2;
-              }
-            };
-            game.play();
+          await new Promise(r => setTimeout(r, 5));
+          const former = new PlayerAI(champ);
+          const challenge = async (challenger, side) => {
+            side -= 1;
+            const players = [former, former];
+            players[side] = challenger;
+            const game = new Game(players, true);
+            challenger.game = game;
+            game.remainRound = maxRounds;
+            return new Promise(r => {
+              game.onEnd = (result, score) => {
+                r(score[side]);
+              };
+              game.play();
+            });
           };
-          for (let i = 0; i < vs.length; i++) {
-            const [a, b] = vs[i];
-            const pa = new PlayerAI(horde[a]);
-            const pb = new PlayerAI(horde[b]);
-            //const pb = {
-            //  decide (game, callback) {
-            //    for (let y = 0; y < BOARD_SIZE; y++) {
-            //      for (let x = 0; x < BOARD_SIZE; x++) {
-            //        if (game.board[y][x] === EMPTY) {
-            //          callback(x, y);
-            //          return
-            //        }
-            //      }
-            //    }
-            //  },
-            //  end () {}
-            //}
-            pa.score = 0;
-            pb.score = 0;
-            play(pa, pb);
+          for (let i = 0; i < horde.length; i++) {
+            const orc = horde[i];
+            const challenger = new PlayerAI(orc);
+            orc.score = Math.min(await challenge(challenger, BLACK), await challenge(challenger, WHITE));
+            orc.game = challenger.game;
             await new Promise(r => setTimeout(r, 5));
-            play(pb, pa);
-            await new Promise(r => setTimeout(r, 5));
-            horde[a].survive = pa.score > 0;
-            // horde[b].survive = pb.score > 2;
           }
-          
           epoch++;
-          lastGame && ui.end(lastGame);
-          console.log('epoch', epoch, horde.map(v => v.survive), maxRounds);
-          const remain = horde.filter(orc => orc.survive);
-          if (remain.length < 2) {
-            maxRounds += 20;
-          } else if (maxRounds > 10) {
-            maxRounds -= 5;
-            horde = remain;
+          ui.end(horde[HORDE_SIZE - 1].game);
+          console.log('epoch', epoch, horde.map(v => v.score), maxRounds);
+          horde.sort((a, b) => b.score - a.score);
+          if (horde[0].score > champ.score) {
+            champ = horde[0].slice(0);
+            champ.score = horde[0].score;
+            localStorage.goBangCore = JSON.stringify(champ);
+            console.log('new champion', champ.score);
           }
-          localStorage.goBangCore = JSON.stringify(horde[0]);
+          horde = horde.slice(0, Math.ceil(horde.length / 2));
         }
       })();
     </script>

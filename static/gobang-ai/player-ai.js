@@ -32,7 +32,7 @@ class PlayerAI {
             const cy = y + dy;
             if (cx >= 0 && cx < BOARD_SIZE && cy >=0 && cy < BOARD_SIZE) {
               if (game.board[cy][cx] === EMPTY) {
-                candidates[cx + cy * BOARD_SIZE] = 1;
+                candidates[cx + cy * BOARD_SIZE] = [cx, cy];
               }
             }
           }
@@ -50,7 +50,10 @@ class PlayerAI {
       const [cx, cy] = game.prevPlay;
       //seq[(cx + cy * BOARD_SIZE) * 3] = 0.0;
     } else {
-      candidates[BOARD_SIZE * BOARD_SIZE / 2] = 1;
+      candidates[Math.floor(BOARD_SIZE * BOARD_SIZE / 2)] = [
+        Math.floor(BOARD_SIZE / 2),
+        Math.floor(BOARD_SIZE / 2),
+      ];
     }
     let sum = 0;
     const choice = [];
@@ -58,12 +61,12 @@ class PlayerAI {
       k = k | 0;
       let j = k * 2;
       seq[j] = 1.0;
-      const value = this.evaluate(seq) + 0.0001;
+      const value = this.evaluate(seq) + 0.00001;
       if (value === NaN) {
         throw new Error('Evaluated NaN');
       }
       choice.push({
-        key: k,
+        pos: candidates[k],
         value,
       });
       sum += value;
@@ -79,15 +82,14 @@ class PlayerAI {
         v.propability = propability;
         v.watermark = watermark;
       });
-      const r = Math.random();
-      for (let i = 0; i < choice.length; i++) {
-        if (r < choice[i].watermark) {
-          decision = choice[i];
-          break;
-        }
-      }
-      const x = decision.key % BOARD_SIZE;
-      const y = Math.floor(decision.key / BOARD_SIZE);
+      //const r = Math.random();
+      //for (let i = 0; i < choice.length; i++) {
+      //  if (r < choice[i].watermark) {
+      //    decision = choice[i];
+      //    break;
+      //  }
+      //}
+      const [x, y] = decision.pos;
       callback(x, y);
     } else {
       throw new Error('No place left to play');
@@ -100,8 +102,8 @@ class PlayerAI {
 
 function createRandomCore () {
   return [
-    nnLayer(BOARD_SIZE * BOARD_SIZE * 2, BOARD_SIZE * 5),
-    nnLayer(BOARD_SIZE * 5, 1),
+    nnLayer(BOARD_SIZE * BOARD_SIZE * 2, BOARD_SIZE),
+    nnLayer(BOARD_SIZE, 1),
   ];
 }
 
@@ -141,8 +143,8 @@ function nnLayer (inSize, outSize) {
 
 function inheritLayer (parent) {
   return {
-    bias: mutate(parent.bias, 0.1),
-    weight: parent.weight.map(v => mutate(v, 0.1)),
+    bias: mutate(parent.bias, 0.2),
+    weight: parent.weight.map(v => mutate(v, 0.2)),
   };
 }
 
@@ -158,12 +160,7 @@ function mutate (arr, thresh) {
   return arr.map(v => {
     let d = Math.random();
     if (d < thresh) {
-      v += d - thresh / 2;
-      if (v < 0) {
-        v = 0;
-      } else if (v > 1) {
-        v = 1;
-      }
+      return Math.random();
     }
     return v;
   });
