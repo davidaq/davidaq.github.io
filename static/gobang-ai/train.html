@@ -47,6 +47,9 @@
           core = learner.getCore();
           localStorage.goBangCore = JSON.stringify(core);
           console.log(epoch);
+          if (epoch % 100 === 0) {
+            console.clear();
+          }
           await new Promise(r => setTimeout(r, 1));
         }
       })();
