@@ -13,6 +13,8 @@
   <body>
     <div id="gameboard"></div>
     <script src="game.js"></script>
+    <script src="convnet.js"></script>
+    <script src="deepqlearn.js"></script>
     <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
     <script>
@@ -21,7 +23,6 @@
       try {
         horde.push(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
-      horde.push(createRandomCore());
       const ui = new PlayerUI(document.getElementById('gameboard'));
       (async () => {
         let epoch = 0;
@@ -32,7 +33,7 @@
           while (horde.length < HORDE_SIZE) {
             const pa = Math.floor(Math.random() * horde.length);
             const pb = Math.floor(Math.random() * horde.length);
-            horde.push(inheritCore(crossCore(horde[pa], horde[pb])))
+            horde.push(horde[pa]);
           }
           await new Promise(r => setTimeout(r, 5));
           const former = new PlayerAI(champ);
