@@ -57,8 +57,7 @@ class PlayerAI {
     Object.keys(candidates).forEach(k => {
       k = k | 0;
       let j = k * 2;
-      seq[j] = 0;
-      seq[j + 1] = 1;
+      seq[j] = 1.0;
       const value = this.evaluate(seq) + 0.0001;
       if (value === NaN) {
         throw new Error('Evaluated NaN');
@@ -68,8 +67,7 @@ class PlayerAI {
         value,
       });
       sum += value;
-      seq[j] = 1;
-      seq[j + 1] = 0;
+      seq[j] = 0.0;
     });
     if (choice.length > 0) {
       choice.sort((a, b) => b.value - a.value);
@@ -82,12 +80,12 @@ class PlayerAI {
         v.watermark = watermark;
       });
       const r = Math.random();
-      //for (let i = 0; i < choice.length; i++) {
-      //  if (r < choice[i].watermark) {
-      //    decision = choice[i];
-      //    break;
-      //  }
-      //}
+      for (let i = 0; i < choice.length; i++) {
+        if (r < choice[i].watermark) {
+          decision = choice[i];
+          break;
+        }
+      }
       const x = decision.key % BOARD_SIZE;
       const y = Math.floor(decision.key / BOARD_SIZE);
       callback(x, y);
@@ -108,10 +106,14 @@ function createRandomCore () {
 }
 
 function inheritCore (parent) {
-  return [
-    inheritLayer(parent[0]),
-    inheritLayer(parent[1]),
-  ]
+  if (Math.random() < 0.5) {
+    return [
+      inheritLayer(parent[0]),
+      inheritLayer(parent[1]),
+    ]
+  } else {
+    return parent;
+  }
 }
 
 function crossCore (parentA, parentB) {
@@ -138,14 +140,10 @@ function nnLayer (inSize, outSize) {
 }
 
 function inheritLayer (parent) {
-  if (Math.random() < 0.5) {
-    return {
-      bias: mutate(parent.bias, 0.1),
-      weight: parent.weight.map(v => mutate(v, 0.1)),
-    };
-  } else {
-    return parent;
-  }
+  return {
+    bias: mutate(parent.bias, 0.1),
+    weight: parent.weight.map(v => mutate(v, 0.1)),
+  };
 }
 
 function crossLayer (parentA, parentB) {
