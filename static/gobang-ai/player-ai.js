@@ -8,7 +8,7 @@ class PlayerAI {
 
   initCore (json) {
     const env = {
-      getNumStates: () => BOARD_SIZE * BOARD_SIZE * 3,
+      getNumStates: () => BOARD_SIZE * BOARD_SIZE * 2,
       getMaxNumActions: () => BOARD_SIZE * BOARD_SIZE,
       isActionPossible: (a) => !!this.actionPosible[a],
       forTraining: () => this.learn,
@@ -16,10 +16,10 @@ class PlayerAI {
     const spec = {
       alpha: 0.01,
       epsilon: this.learn ? 0.3 : 0,
-      gamma: 0.9,
+      gamma: 0.8,
       num_hidden_units: BOARD_SIZE * 5,
-      experience_add_every: 3,
-      learning_steps_per_iteration: 15,
+      tderror_clamp: 2,
+      experience_size: 50000,
     };
     this.brain = new RL.DQNAgent(env, spec);
     if (json) {
@@ -42,7 +42,7 @@ class PlayerAI {
     let i = 0;
     this.actionPosible = {};
     game.board.forEach((line, y) => line.forEach((v, x) => {
-      input[i++] = 0.0;
+      // input[i++] = 0.0;
       if (v === EMPTY) {
         this.actionPosible[x + y * BOARD_SIZE] = true;
         input[i++] = 0.0;
@@ -57,11 +57,11 @@ class PlayerAI {
         }
       }
     }));
-    if (game.prevPlay) {
-      const [x, y] = game.prevPlay;
-      input[(x + y * BOARD_SIZE) * 3] = 1.0;
-    }
-    if (this.learn && game.suggest) {
+    // if (game.prevPlay) {
+    //   const [x, y] = game.prevPlay;
+    //   input[(x + y * BOARD_SIZE) * 3] = 1.0;
+    // }
+    if (false && this.learn && game.suggest) {
       const [x, y] = game.suggest;
       this.brain.act(input, x + y * BOARD_SIZE);
       callback(x, y);
@@ -80,7 +80,7 @@ class PlayerAI {
 
   learnFromReward () {
     if (this.shouldLearn) {
-      this.brain.learn(this.willReward)
+      this.brain.learn(this.willReward);
       this.shouldLearn = false;
     }
   }

@@ -34,7 +34,7 @@
             game.onReward = (side, reward) => {
               ai[side - 1].reward(reward);
               if (reward > 0) {
-                ai[2 - side].reward(-reward * 0.2);
+                ai[2 - side].reward(-reward * 0.5);
               }
             };
             game.onEnd = (result) => {
