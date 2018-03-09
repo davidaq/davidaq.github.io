@@ -12,7 +12,7 @@ class PlayerUI {
       width: `${boardWidth}px`,
       height: `${boardWidth}px`,
       background: '#9D9',
-      transform: `scale(${(Math.min(window.innerWidth, window.innerHeight) - 30) / boardWidth})`,
+      transform: `scale(${(Math.min(window.innerWidth, window.innerHeight - 100) - 30) / boardWidth})`,
       transformOrigin: '0 0'
     });
     for (let y = 0; y < BOARD_SIZE; y++) {

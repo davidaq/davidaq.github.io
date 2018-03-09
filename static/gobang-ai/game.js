@@ -49,7 +49,6 @@ class Game {
       [1, 1],
       [1, -1],
     ];
-    let reward = 0;
     for (let i = 0; i < lines.length; i++) {
       const [dx, dy] = lines[i];
       const stat = {
@@ -82,33 +81,23 @@ class Game {
       if (count >= 4) {
         this.isWin = true;
         this.onReward && this.onReward(this.currentPlayer, 2);
+        this.onReward && this.onReward(3 - this.currentPlayer, -4);
         this.players.forEach(player => {
           player.end(this, this.currentPlayer);
         });
         this.onEnd && this.onEnd(this.currentPlayer);
         return true;
       }
-      if (this.train) {
-        // 检查活连
-        if (count === 3) {
-          if (open === 2) {
-            reward += 0.2;
-          } else if (open === 1) {
-            reward += 0.1;
-            //this.suggest = stat.openPos[0] || stat.openPos[1];
-          }
-        }
-      }
     }
-    reward /= Math.ceil((this.elapseRound + 1) / 2);
-    this.onReward && this.onReward(this.currentPlayer, reward);
     if (this.remainRound === 0) {
+      this.onReward && this.onReward(this.currentPlayer, -0.5);
       this.players.forEach(player => {
         player.end(this, TIE);
       });
       this.onEnd && this.onEnd(TIE);
       return true;
     }
+    this.onReward && this.onReward(this.currentPlayer, -0.05);
     return false
   }
 }

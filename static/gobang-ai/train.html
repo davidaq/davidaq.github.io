@@ -25,30 +25,45 @@
       const ui = new PlayerUI(document.getElementById('gameboard'));
       (async () => {
         let epoch = 0;
-        const ai = [new PlayerAI(core, true), new PlayerAI(core, true)];
+        const ai = [
+          new PlayerAI(core, true, 0.3),
+          new PlayerAI(core, true, 0.05),
+        ];
+        let wins = {};
+        wins[ai[0].randomess] = 0;
+        wins[ai[1].randomess] = 0;
         ai[1].shareBrain(ai[0]);
         while (true) {
+          if (Math.random() < 0.5) {
+            const t = ai[0];
+            ai[0] = ai[1];
+            ai[1] = t;
+          }
           const game = new Game(ai, true);
           await new Promise(r => {
             game.onReward = (side, reward) => {
               ai[side - 1].reward(reward);
-              // if (reward > 0) {
-              //   ai[2 - side].reward(-reward * 0.5);
-              // }
             };
             game.onEnd = (result) => {
+              if (result !== TIE) {
+                wins[ai[result - 1].randomess]++;
+              }
               r();
             };
             game.play();
           });
           epoch++;
-          ui.end(game);
-          core = ai[0].getCore();
-          localStorage.goBangCore = JSON.stringify(core);
-          if (epoch % 100 === 0) {
-            console.log('epoch:', epoch, 'avgloss:', ai[0].brain.tdloss);
+          if (epoch % 10 === 0) {
+            ui.end(game);
+            core = ai[0].getCore();
+            localStorage.goBangCore = JSON.stringify(core);
+            await new Promise(r => setTimeout(r, 1));
           }
-          await new Promise(r => setTimeout(r, 1));
+          if (epoch % 200 === 0) {
+            console.log('epoch:', epoch, 'avgloss:', ai[0].brain.tdloss.toFixed(5), wins);
+            wins[ai[0].randomess] = 0;
+            wins[ai[1].randomess] = 0;
+          }
         }
       })();
     </script>

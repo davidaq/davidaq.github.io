@@ -743,7 +743,7 @@ DQNAgent.prototype = {
 
     
     var ns = new R.Mat(this.ns, 1);
-    ns.setFrom(this.env.opponentStateAfterAction(a));
+    ns.setFrom(this.env.opponentStateAfterAction(ns, a));
 
     return {
       action: a,
@@ -755,8 +755,7 @@ DQNAgent.prototype = {
     this.errorStat.list.push(tderror);
     this.errorStat.sum += tderror;
     if (this.errorStat.list.length > 1000) {
-      let l = this.errorStat.list.shift();
-      this.errorStat.sum -= l;
+      this.errorStat.sum -= this.errorStat.list.shift();
     }
     this.tdloss = this.errorStat.sum / this.errorStat.list.length;
 
@@ -776,31 +775,31 @@ DQNAgent.prototype = {
       this.learnFromTuple.apply(this, e);
     }
   },
-  learn: function(r1) {
-    // perform an update on Q function
-    if(!(this.r0 == null) && this.alpha > 0) {
+  //learn: function(r1) {
+  //  // perform an update on Q function
+  //  if(!(this.r0 == null) && this.alpha > 0) {
 
-      // learn from this tuple to get a sense of how "surprising" it is to the agent
-      var tderror = this.learnFromTuple(this.s0, this.a0, this.r0, this.s1, this.a1);
-      this.tderror = tderror; // a measure of surprise
+  //    // learn from this tuple to get a sense of how "surprising" it is to the agent
+  //    var tderror = this.learnFromTuple(this.s0, this.a0, this.r0, this.s1, this.a1);
+  //    this.tderror = tderror; // a measure of surprise
 
-      // decide if we should keep this experience in the replay
-      if(this.t % this.experience_add_every === 0) {
-        this.exp[this.expi] = [this.s0, this.a0, this.r0, this.s1, this.a1];
-        this.expi += 1;
-        if(this.expi > this.experience_size) { this.expi = 0; } // roll over when we run out
-      }
-      this.t += 1;
+  //    // decide if we should keep this experience in the replay
+  //    if(this.t % this.experience_add_every === 0) {
+  //      this.exp[this.expi] = [this.s0, this.a0, this.r0, this.s1, this.a1];
+  //      this.expi += 1;
+  //      if(this.expi > this.experience_size) { this.expi = 0; } // roll over when we run out
+  //    }
+  //    this.t += 1;
 
-      // sample some additional experience from replay memory and learn from it
-      for(var k=0;k<this.learning_steps_per_iteration;k++) {
-        var ri = randi(0, this.exp.length); // todo: priority sweeps?
-        var e = this.exp[ri];
-        this.learnFromTuple(e[0], e[1], e[2], e[3], e[4])
-      }
-    }
-    this.r0 = r1; // store for next update
-  },
+  //    // sample some additional experience from replay memory and learn from it
+  //    for(var k=0;k<this.learning_steps_per_iteration;k++) {
+  //      var ri = randi(0, this.exp.length); // todo: priority sweeps?
+  //      var e = this.exp[ri];
+  //      this.learnFromTuple(e[0], e[1], e[2], e[3], e[4])
+  //    }
+  //  }
+  //  this.r0 = r1; // store for next update
+  //},
   learnFromTuple: function(s0, a0, r0, s1, a1) {
     // want: Q(s,a) = r + gamma * max_a' Q(s',a')
 

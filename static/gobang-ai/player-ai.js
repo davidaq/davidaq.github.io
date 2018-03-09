@@ -1,6 +1,7 @@
 class PlayerAI {
-  constructor (coreJSON, learn) {
+  constructor (coreJSON, learn, randomess = 0) {
     this.learn = learn;
+    this.randomess = randomess;
     this.learner = null;
     this.willReward = 0;
     this.initCore(coreJSON);
@@ -15,12 +16,11 @@ class PlayerAI {
       opponentStateAfterAction: (a) => this.opponentStateAfterAction(a),
     };
     const spec = {
-      alpha: 0.01,
-      epsilon: this.learn ? 0.3 : 0,
-      gamma: -0.8,
-      num_hidden_units: BOARD_SIZE * BOARD_SIZE,
-      tderror_clamp: 4,
-      experience_size: 50000,
+      alpha: 0.002 * this.randomess,
+      epsilon: this.randomess,
+      gamma: -0.9,
+      num_hidden_units: BOARD_SIZE * BOARD_SIZE * BOARD_SIZE,
+      experience_size: 5000,
     };
     this.brain = new RL.DQNAgent(env, spec);
     if (json) {
