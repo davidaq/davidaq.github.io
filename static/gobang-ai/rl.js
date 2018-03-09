@@ -672,10 +672,14 @@ DQNAgent.prototype = {
     this.a0 = null;
     this.a1 = null;
 
+    this.errorStat = {
+      list: [],
+      sum: 0,
+    };
+
     this.tderror = 0; // for visualization only...
   },
   updateTargetNet () {
-    console.log('update target');
     this.targetNet = R.netFromJSON(R.netToJSON(this.net));
   },
   toJSON: function() {
@@ -713,7 +717,7 @@ DQNAgent.prototype = {
         var a = 0;
         while (true) {
           a = randi(0, this.na);
-          if (this.env.isActionPossible(a)) {
+          if (this.env.isActionPossible(a, s)) {
             break;
           }
         }
@@ -722,7 +726,7 @@ DQNAgent.prototype = {
         var amat = this.forwardQ(this.net, s, false);
         var a = -1;
         for (var i = 0; i < amat.w.length; i++) {
-          if (this.env.isActionPossible(i)) {
+          if (this.env.isActionPossible(i, s)) {
             if (a === -1 || amat.w[i] > amat.w[a]) {
               a = i;
             }
@@ -737,7 +741,40 @@ DQNAgent.prototype = {
     this.s1 = s;
     this.a1 = a;
 
-    return a;
+    
+    var ns = new R.Mat(this.ns, 1);
+    ns.setFrom(this.env.opponentStateAfterAction(a));
+
+    return {
+      action: a,
+      learn: this.learnQ.bind(this, s, a, ns),
+    };
+  },
+  learnQ: function (s, a, ns, reward) {
+    var tderror = this.learnFromTuple(s, a, reward, ns, 0);
+    this.errorStat.list.push(tderror);
+    this.errorStat.sum += tderror;
+    if (this.errorStat.list.length > 1000) {
+      let l = this.errorStat.list.shift();
+      this.errorStat.sum -= l;
+    }
+    this.tdloss = this.errorStat.sum / this.errorStat.list.length;
+
+    if(this.t % this.experience_add_every === 0) {
+      this.exp[this.expi] = [s, a, reward, ns, 0];
+      this.expi += 1;
+      if(this.expi > this.experience_size) {
+        this.expi = 0; // roll over when we run out
+      }
+    }
+    this.t += 1;
+
+    // sample some additional experience from replay memory and learn from it
+    for(var k=0;k<this.learning_steps_per_iteration;k++) {
+      var ri = randi(0, this.exp.length);
+      var e = this.exp[ri];
+      this.learnFromTuple.apply(this, e);
+    }
   },
   learn: function(r1) {
     // perform an update on Q function
@@ -772,15 +809,24 @@ DQNAgent.prototype = {
     if (s1) {
       var atmat = this.forwardQ(this.net, s1, false);
       var vtmat = this.forwardQ(this.targetNet, s1, false);
-      qmax += this.gamma * vtmat.w[R.maxi(atmat.w)];
+      var a = -1;
+      for (var i = 0; i < atmat.w.length; i++) {
+        if (this.env.isActionPossible(i, s1)) {
+          if (a === -1 || atmat.w[i] > atmat.w[a]) {
+            a = i;
+          }
+        }
+      }
+      qmax += this.gamma * vtmat.w[a];
     }
 
     // now predict
     var pred = this.forwardQ(this.net, s0, true);
 
     var tderror = pred.w[a0] - qmax;
+    var abserror = Math.abs(tderror);
     var clamp = this.tderror_clamp;
-    if(Math.abs(tderror) > clamp) {  // huber loss to robustify
+    if(abserror > clamp) {  // huber loss to robustify
       if(tderror > clamp) tderror = clamp;
       if(tderror < -clamp) tderror = -clamp;
     }
@@ -789,14 +835,14 @@ DQNAgent.prototype = {
 
     // update net
     R.updateNet(this.net, this.alpha);
-    return tderror;
+    return abserror;
   },
   endRound: function() {
     if (this.t > 1000) {
       this.t = 0;
       this.updateTargetNet();
     }
-    this.learnFromTuple(this.s0, this.a0, this.r0);
+    //this.learnFromTuple(this.s1, this.a1, this.r0);
     this.r0 = null;
   }
 }

@@ -25,17 +25,16 @@
       const ui = new PlayerUI(document.getElementById('gameboard'));
       (async () => {
         let epoch = 0;
-        const learner = new PlayerAI(core, true);
+        const ai = [new PlayerAI(core, true), new PlayerAI(core, true)];
+        ai[1].shareBrain(ai[0]);
         while (true) {
-          const ai = [learner, learner];
-          ai[Math.random() < 0.5 ? 0 : 1] = new PlayerAI(core, false);
           const game = new Game(ai, true);
           await new Promise(r => {
             game.onReward = (side, reward) => {
               ai[side - 1].reward(reward);
-              if (reward > 0) {
-                ai[2 - side].reward(-reward * 0.5);
-              }
+              // if (reward > 0) {
+              //   ai[2 - side].reward(-reward * 0.5);
+              // }
             };
             game.onEnd = (result) => {
               r();
@@ -44,11 +43,10 @@
           });
           epoch++;
           ui.end(game);
-          core = learner.getCore();
+          core = ai[0].getCore();
           localStorage.goBangCore = JSON.stringify(core);
-          console.log(epoch);
-          if (epoch % 1000 === 0) {
-            console.clear();
+          if (epoch % 100 === 0) {
+            console.log('epoch:', epoch, 'avgloss:', ai[0].brain.tdloss);
           }
           await new Promise(r => setTimeout(r, 1));
         }

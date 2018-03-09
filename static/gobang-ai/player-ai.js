@@ -1,7 +1,7 @@
 class PlayerAI {
   constructor (coreJSON, learn) {
     this.learn = learn;
-    this.shouldLearn = false;
+    this.learner = null;
     this.willReward = 0;
     this.initCore(coreJSON);
   }
@@ -10,15 +10,16 @@ class PlayerAI {
     const env = {
       getNumStates: () => BOARD_SIZE * BOARD_SIZE * 2,
       getMaxNumActions: () => BOARD_SIZE * BOARD_SIZE,
-      isActionPossible: (a) => !!this.actionPosible[a],
+      isActionPossible: (a, s) => s.w[a * 2] < 0.1 && s.w[a * 2 + 1] < 0.1,
       forTraining: () => this.learn,
+      opponentStateAfterAction: (a) => this.opponentStateAfterAction(a),
     };
     const spec = {
-      alpha: 0.001,
+      alpha: 0.01,
       epsilon: this.learn ? 0.3 : 0,
-      gamma: 0.8,
+      gamma: -0.8,
       num_hidden_units: BOARD_SIZE * BOARD_SIZE,
-      tderror_clamp: 2,
+      tderror_clamp: 4,
       experience_size: 50000,
     };
     this.brain = new RL.DQNAgent(env, spec);
@@ -26,6 +27,10 @@ class PlayerAI {
       this.brain.fromJSON(json);
     }
     this.netInput = new Array(env.getNumStates());
+  }
+
+  shareBrain (player) {
+    this.brain.net = player.brain.net;
   }
 
   getCore () {
@@ -66,22 +71,37 @@ class PlayerAI {
       this.brain.act(input, x + y * BOARD_SIZE);
       callback(x, y);
     } else {
-      const decision = this.brain.act(input);
-      const x = decision % BOARD_SIZE;
-      const y = Math.floor(decision / BOARD_SIZE);
-      if (game.board[y][x] !== EMPTY) {
-        throw new Error('Trying to play on taken place');
+      while (true) {
+        const { action, learn } = this.brain.act(input);
+        const x = action % BOARD_SIZE;
+        const y = Math.floor(action / BOARD_SIZE);
+        if (game.board[y][x] !== EMPTY) {
+          learn(-1);
+        } else {
+          this.willReward = 0;
+          this.learner = this.learn ? learn : null;
+          callback(x, y);
+          break;
+        }
       }
-      this.willReward = 0;
-      this.shouldLearn = this.learn;
-      callback(x, y);
     }
   }
 
+  opponentStateAfterAction (a) {
+    const input = this.netInput;
+    input[a * 2] = 1.0;
+    for (let i = 0; i< BOARD_SIZE * BOARD_SIZE; i++) {
+      const t = input[i];
+      input[i] = input[i + 1];
+      input[i + 1] = t;
+    }
+    return input;
+  }
+
   learnFromReward () {
-    if (this.shouldLearn) {
-      this.brain.learn(this.willReward);
-      this.shouldLearn = false;
+    if (this.learner) {
+      this.learner(this.willReward);
+      this.learner = null;
     }
   }
 

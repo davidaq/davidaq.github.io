@@ -3,7 +3,7 @@ const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
 
-const BOARD_SIZE = 9;
+const BOARD_SIZE = 7;
 
 class Game {
   constructor (players, train) {
@@ -81,27 +81,27 @@ class Game {
       let open = stat.open[0] + stat.open[1];
       if (count >= 4) {
         this.isWin = true;
-        this.onReward && this.onReward(this.currentPlayer, 1);
+        this.onReward && this.onReward(this.currentPlayer, 2);
         this.players.forEach(player => {
           player.end(this, this.currentPlayer);
         });
         this.onEnd && this.onEnd(this.currentPlayer);
         return true;
       }
-      // if (this.train) {
-      //   // 检查活连
-      //   if (count === 3) {
-      //     if (open === 2) {
-      //       reward += 0.2;
-      //     } else if (open === 1) {
-      //       reward += 0.1;
-      //       this.suggest = stat.openPos[0] || stat.openPos[1];
-      //     }
-      //   }
-      // }
+      if (this.train) {
+        // 检查活连
+        if (count === 3) {
+          if (open === 2) {
+            reward += 0.2;
+          } else if (open === 1) {
+            reward += 0.1;
+            //this.suggest = stat.openPos[0] || stat.openPos[1];
+          }
+        }
+      }
     }
     reward /= Math.ceil((this.elapseRound + 1) / 2);
-    // this.onReward && this.onReward(this.currentPlayer, reward);
+    this.onReward && this.onReward(this.currentPlayer, reward);
     if (this.remainRound === 0) {
       this.players.forEach(player => {
         player.end(this, TIE);
