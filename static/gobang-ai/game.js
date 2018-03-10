@@ -3,7 +3,8 @@ const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
 
-const BOARD_SIZE = 7;
+const BOARD_SIZE = 5;
+const WIN_CONDITION = 3;
 
 class Game {
   constructor (players, train) {
@@ -58,7 +59,7 @@ class Game {
       };
       const check = (dir, side) => {
         const statI = (dir + 1) / 2;
-        for (let j = 1; j < 5; j++) {
+        for (let j = 1; j < WIN_CONDITION; j++) {
           var cx = x - dx * j * dir;
           var cy = y - dy * j * dir;
           if (cx < 0 || cx >= BOARD_SIZE || cy < 0 || cy >= BOARD_SIZE) {
@@ -78,7 +79,7 @@ class Game {
       check(-1, this.currentPlayer);
       let count = 1 + stat.count[0] + stat.count[1];
       let open = stat.open[0] + stat.open[1];
-      if (count >= 4) {
+      if (count >= WIN_CONDITION) {
         this.isWin = true;
         this.onReward && this.onReward(this.currentPlayer, 2);
         this.onReward && this.onReward(3 - this.currentPlayer, -4);
@@ -90,7 +91,8 @@ class Game {
       }
     }
     if (this.remainRound === 0) {
-      this.onReward && this.onReward(this.currentPlayer, -0.5);
+      this.onReward && this.onReward(this.currentPlayer, -1);
+      this.onReward && this.onReward(3 - this.currentPlayer, -1);
       this.players.forEach(player => {
         player.end(this, TIE);
       });

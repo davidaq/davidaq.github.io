@@ -1,7 +1,7 @@
 class PlayerAI {
-  constructor (coreJSON, learn, randomess = 0) {
+  constructor (coreJSON, learn, randomness = 0) {
     this.learn = learn;
-    this.randomess = randomess;
+    this.randomness = randomness;
     this.learner = null;
     this.willReward = 0;
     this.initCore(coreJSON);
@@ -13,13 +13,13 @@ class PlayerAI {
       getMaxNumActions: () => BOARD_SIZE * BOARD_SIZE,
       isActionPossible: (a, s) => s.w[a * 2] < 0.1 && s.w[a * 2 + 1] < 0.1,
       forTraining: () => this.learn,
-      opponentStateAfterAction: (a) => this.opponentStateAfterAction(a),
+      opponentStateAfterAction: (a, s) => this.opponentStateAfterAction(a, s),
     };
     const spec = {
-      alpha: 0.002 * this.randomess,
-      epsilon: this.randomess,
-      gamma: -0.9,
-      num_hidden_units: BOARD_SIZE * BOARD_SIZE * BOARD_SIZE,
+      alpha: 0.001 * (1 - this.randomness),
+      epsilon: this.randomness,
+      gamma: 0.8,
+      num_hidden_units: BOARD_SIZE * BOARD_SIZE,
       experience_size: 5000,
     };
     this.brain = new RL.DQNAgent(env, spec);
@@ -47,7 +47,6 @@ class PlayerAI {
     let i = 0;
     this.actionPosible = {};
     game.board.forEach((line, y) => line.forEach((v, x) => {
-      // input[i++] = 0.0;
       if (v === EMPTY) {
         this.actionPosible[x + y * BOARD_SIZE] = true;
         input[i++] = 0.0;
@@ -62,10 +61,6 @@ class PlayerAI {
         }
       }
     }));
-    // if (game.prevPlay) {
-    //   const [x, y] = game.prevPlay;
-    //   input[(x + y * BOARD_SIZE) * 3] = 1.0;
-    // }
     if (false && this.learn && game.suggest) {
       const [x, y] = game.suggest;
       this.brain.act(input, x + y * BOARD_SIZE);
@@ -87,15 +82,12 @@ class PlayerAI {
     }
   }
 
-  opponentStateAfterAction (a) {
-    const input = this.netInput;
-    input[a * 2] = 1.0;
-    for (let i = 0; i< BOARD_SIZE * BOARD_SIZE; i++) {
-      const t = input[i];
-      input[i] = input[i + 1];
-      input[i + 1] = t;
+  opponentStateAfterAction (a, s) {
+    s.w[a * 2] = 1.0;
+    s.w[a * 2 + 1] = 0.0;
+    for (let i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+      ([s.w[i * 2], s.w[i * 2 + 1]] = [s.w[i * 2 + 1], s.w[i * 2]]);
     }
-    return input;
   }
 
   learnFromReward () {

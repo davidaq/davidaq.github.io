@@ -724,14 +724,7 @@ DQNAgent.prototype = {
       } else {
         // greedy wrt Q function
         var amat = this.forwardQ(this.net, s, false);
-        var a = -1;
-        for (var i = 0; i < amat.w.length; i++) {
-          if (this.env.isActionPossible(i, s)) {
-            if (a === -1 || amat.w[i] > amat.w[a]) {
-              a = i;
-            }
-          }
-        }
+        var a = this.maxPossibleAction(amat, s);
       }
     }
 
@@ -743,15 +736,30 @@ DQNAgent.prototype = {
 
     
     var ns = new R.Mat(this.ns, 1);
-    ns.setFrom(this.env.opponentStateAfterAction(ns, a));
+    ns.setFrom(s.w);
+    this.env.opponentStateAfterAction(a, ns);
 
     return {
       action: a,
       learn: this.learnQ.bind(this, s, a, ns),
     };
   },
+  maxPossibleAction (amat, s) {
+    var a = -1;
+    for (var i = 0; i < amat.w.length; i++) {
+      if (this.env.isActionPossible(i, s)) {
+        if (a === -1 || amat.w[i] > amat.w[a]) {
+          a = i;
+        }
+      }
+    }
+    return a;
+  },
   learnQ: function (s, a, ns, reward) {
     var tderror = this.learnFromTuple(s, a, reward, ns, 0);
+    if (isNaN(tderror)) {
+      throw 'Error NaN';
+    }
     this.errorStat.list.push(tderror);
     this.errorStat.sum += tderror;
     if (this.errorStat.list.length > 1000) {
@@ -775,48 +783,23 @@ DQNAgent.prototype = {
       this.learnFromTuple.apply(this, e);
     }
   },
-  //learn: function(r1) {
-  //  // perform an update on Q function
-  //  if(!(this.r0 == null) && this.alpha > 0) {
-
-  //    // learn from this tuple to get a sense of how "surprising" it is to the agent
-  //    var tderror = this.learnFromTuple(this.s0, this.a0, this.r0, this.s1, this.a1);
-  //    this.tderror = tderror; // a measure of surprise
-
-  //    // decide if we should keep this experience in the replay
-  //    if(this.t % this.experience_add_every === 0) {
-  //      this.exp[this.expi] = [this.s0, this.a0, this.r0, this.s1, this.a1];
-  //      this.expi += 1;
-  //      if(this.expi > this.experience_size) { this.expi = 0; } // roll over when we run out
-  //    }
-  //    this.t += 1;
-
-  //    // sample some additional experience from replay memory and learn from it
-  //    for(var k=0;k<this.learning_steps_per_iteration;k++) {
-  //      var ri = randi(0, this.exp.length); // todo: priority sweeps?
-  //      var e = this.exp[ri];
-  //      this.learnFromTuple(e[0], e[1], e[2], e[3], e[4])
-  //    }
-  //  }
-  //  this.r0 = r1; // store for next update
-  //},
   learnFromTuple: function(s0, a0, r0, s1, a1) {
-    // want: Q(s,a) = r + gamma * max_a' Q(s',a')
-
     // compute the target Q value
     var qmax = r0;
     if (s1) {
       var atmat = this.forwardQ(this.net, s1, false);
-      var vtmat = this.forwardQ(this.targetNet, s1, false);
-      var a = -1;
-      for (var i = 0; i < atmat.w.length; i++) {
-        if (this.env.isActionPossible(i, s1)) {
-          if (a === -1 || atmat.w[i] > atmat.w[a]) {
-            a = i;
-          }
+      var opponentAction = this.maxPossibleAction(atmat, s1);
+      if (opponentAction !== -1) {
+        var ns = new R.Mat(this.ns, 1);
+        ns.setFrom(s1.w);
+        this.env.opponentStateAfterAction(opponentAction, ns);
+        var mtmat = this.forwardQ(this.net, ns, false);
+        var myNextAction = this.maxPossibleAction(mtmat, ns);
+        if (myNextAction !== -1) {
+          var vtmat = this.forwardQ(this.targetNet, ns, false);
+          qmax += this.gamma * vtmat.w[myNextAction];
         }
       }
-      qmax += this.gamma * vtmat.w[a];
     }
 
     // now predict
