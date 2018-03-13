@@ -9,15 +9,16 @@
     <div id="gameboard"></div>
     <script src="game.js"></script>
     <script src="convnet.js"></script>
-    <script src="player-ai-learn.js"></script>
+    <script src="convnet-model.js"></script>
+    <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
     <script>
-      const net = new NetModel();
+      const net = new ConvnetModel();
       try {
         net.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
 
-      const ai = new PlayerAILearn(net, 0);
+      const ai = new PlayerAI(net, 0);
       const human = new PlayerUI(document.getElementById('gameboard'));
       window.game = new Game(human, ai);
       game.play();
