@@ -13,21 +13,20 @@
   <body>
     <div id="gameboard"></div>
     <script src="convnet.js"></script>
+    <script src="convnet-model.js"></script>
     <script src="game.js"></script>
-    <script src="player-ai-learn.js"></script>
+    <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
     <script>
-      const net = new NetModel();
+      const model = new ConvnetModel();
       try {
-        const core = JSON.parse(localStorage.goBangCore);
-        net.fromJSON(core);
+        model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
-      const ui = new PlayerUI(document.getElementById('gameboard'));
       (async () => {
         let epoch = 0;
         const ai = [
-          new PlayerAILearn(net, 0.6),
-          new PlayerAILearn(net, 0.3),
+          new PlayerAI(model, 0.6),
+          new PlayerAI(model, 0.3),
         ];
         let wins = {};
         wins[ai[0].randomness] = 0;
@@ -36,22 +35,11 @@
           if (Math.random() < 0.5) {
             ([ai[0], ai[1]] = [ai[1], ai[0]]);
           }
-          const game = new Game(ai, true);
-          await new Promise(r => {
-            game.onReward = (side, reward) => {
-              ai[side - 1].reward(reward);
-            };
-            game.onEnd = (result) => {
-              if (result !== TIE) {
-                wins[ai[result - 1].randomness]++;
-              }
-              r();
-            };
-            game.play();
-          });
+          const game = new Game(ai[0], ai[1]);
+          await game.play();
           epoch++;
-          ui.end(game);
-          localStorage.goBangCore = JSON.stringify(net.toJSON());
+          displayUI(document.getElementById('gameboard'), game);
+          localStorage.goBangCore = JSON.stringify(model.toJSON());
           await new Promise(r => setTimeout(r, 1));
           if (epoch % 100 === 0) {
             console.log('epoch:', epoch, 'avgError:', ai[0].avgError().toFixed(5), wins);

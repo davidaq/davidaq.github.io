@@ -7,39 +7,39 @@ const BOARD_SIZE = 7;
 const WIN_CONDITION = 4;
 
 class Game {
-  constructor (players, train) {
-    this.players = players;
-    this.train = train;
+  constructor (black, white) {
+    this.players = {
+      [BLACK]: black,
+      [WHITE]: white,
+    };
     this.currentPlayer = BLACK;
-    this.prevPlay = null;
-    this.suggest = null;
+
     this.remainRound = BOARD_SIZE * BOARD_SIZE;
     this.elapseRound = 0;
+
     this.board = [];
     var line = [];
     for (let i = 0; i < BOARD_SIZE; i++) {
       line.push(EMPTY);
     }
     for (let i = 0; i < BOARD_SIZE; i++) {
-      this.board.push(line.slice(0));
+      this.board.push(line.slice());
     }
   }
 
-  play () {
-    this.players[this.currentPlayer - 1].decide(this, (x, y) => {
-      this.remainRound--;
-      this.elapseRound++;
-      this.board[y][x] = this.currentPlayer;
-      this.prevPlay = [x, y];
-      if (!this.checkWin(x, y)) {
-        if (this.currentPlayer === BLACK) {
-          this.currentPlayer = WHITE;
-        } else {
-          this.currentPlayer = BLACK;
-        }
-        this.play();
-      }
-    });
+  cloneBoard () {
+    return this.board.map(line => line.slice());
+  }
+
+  async play () {
+    const [x, y] = await this.players[this.currentPlayer].decide(this);
+    this.remainRound--;
+    this.elapseRound++;
+    this.board[y][x] = this.currentPlayer;
+    if (!this.checkWin(x, y)) {
+      this.currentPlayer = this.currentPlayer === WHITE ? BLACK : WHITE;
+      await this.play();
+    }
   }
 
   checkWin (x, y) {
@@ -52,47 +52,32 @@ class Game {
     ];
     for (let i = 0; i < lines.length; i++) {
       const [dx, dy] = lines[i];
-      const stat = {
-        count: [0, 0],
-        open: [0, 0],
-        openPos: [null, null],
-      };
+      let count = 1;
       const check = (dir, side) => {
         const statI = (dir + 1) / 2;
         for (let j = 1; j < WIN_CONDITION; j++) {
           var cx = x - dx * j * dir;
           var cy = y - dy * j * dir;
-          if (cx < 0 || cx >= BOARD_SIZE || cy < 0 || cy >= BOARD_SIZE) {
-            break;
-          } else if (this.board[cy][cx] === EMPTY) {
-            stat.open[statI]++;
-            stat.openPos[statI] = [cx, cy];
-            break;
-          } else if (this.board[cy][cx] === side) {
-            stat.count[statI]++;
-          } else {
-            break;
+          if (cx >= 0 && cx < BOARD_SIZE && cy >= 0 && cy < BOARD_SIZE) {
+            if (this.board[cy][cx] === this.currentPlayer) {
+              count++;
+              continue;
+            }
           }
+          break;
         }
       }
-      check(1, this.currentPlayer);
-      check(-1, this.currentPlayer);
-      let count = 1 + stat.count[0] + stat.count[1];
-      let open = stat.open[0] + stat.open[1];
+      check(1);
+      check(-1);
       if (count >= WIN_CONDITION) {
-        this.isWin = true;
-        this.players.forEach(player => {
-          player.end(this, this.currentPlayer);
-        });
-        this.onEnd && this.onEnd(this.currentPlayer);
+        this.players[BLACK].end(this, this.currentPlayer);
+        this.players[WHITE].end(this, this.currentPlayer);
         return true;
       }
     }
     if (this.remainRound === 0) {
-      this.players.forEach(player => {
-        player.end(this, TIE);
-      });
-      this.onEnd && this.onEnd(TIE);
+      this.players[BLACK].end(this, TIE);
+      this.players[WHITE].end(this, TIE);
       return true;
     }
     return false

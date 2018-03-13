@@ -12,36 +12,15 @@
     <script src="player-ai-learn.js"></script>
     <script src="player-ui.js"></script>
     <script>
-      window.core = '';
       const net = new NetModel();
       try {
-        core = JSON.parse(localStorage.goBangCore);
-        net.fromJSON(core);
+        net.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
-      window.core = window.trained;
-      function start (isBlack) {
-        const players = [new PlayerAILearn(net, 0)];
-        const human = new PlayerUI(document.getElementById('gameboard'));
-        if (isBlack) {
-          players.unshift(human);
-        } else {
-          players.push(human);
-        }
-        window.game = new Game(players);
-        game.onEnd = (winner) => {
-          setTimeout(() => {
-            if (winner === BLACK) {
-              alert('黑赢');
-            } else if (winner === WHITE) {
-              alert('白赢');
-            } else {
-              alert('平局');
-            }
-          }, 100);
-        };
-        game.play();
-      }
-      start(false);
+
+      const ai = new PlayerAILearn(net, 0);
+      const human = new PlayerUI(document.getElementById('gameboard'));
+      window.game = new Game(human, ai);
+      game.play();
     </script>
   </body>
 </html>
