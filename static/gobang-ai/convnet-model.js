@@ -5,6 +5,33 @@ class ConvnetModel {
     this.inputVol = new convnetjs.Vol(BOARD_SIZE, BOARD_SIZE, 2, 0.0);
   }
 
+  clone () {
+    const ret = new ConvnetModel();
+    ret.fromJSON(this.toJSON());
+    return ret;
+  }
+
+  predict (boardState) {
+    this.initModel();
+    this.gameStateToInput(boardState);
+    return this.net.forward(this.inputVol).w;
+  }
+
+  learn (boardState, target) {
+    this.initOptimizer();
+    this.gameStateToInput(boardState);
+    this.optimizer.train(this.inputVol, target);
+  }
+
+  toJSON () {
+    this.initModel();
+    return this.net.toJSON();
+  }
+
+  fromJSON (json) {
+    this.net.fromJSON(json);
+  }
+
   initModel () {
     if (this.net.layers.length === 0) {
       this.net.makeLayers([
@@ -16,12 +43,6 @@ class ConvnetModel {
         { type: 'regression', num_neurons: BOARD_SIZE * BOARD_SIZE },
       ]);
     }
-  }
-
-  clone () {
-    const ret = new ConvnetModel();
-    ret.fromJSON(this.toJSON());
-    return ret;
   }
   
   initOptimizer () {
@@ -46,33 +67,5 @@ class ConvnetModel {
         this.inputVol.set(x, y, 1, 1.0);
       }
     }));
-  }
-
-  createInput () {
-    return new convnetjs.Vol(BOARD_SIZE, BOARD_SIZE, 2, 0.0);
-  }
-
-  predict (boardState) {
-    this.initModel();
-    this.gameStateToInput(boardState);
-    return this.net.forward(this.inputVol).w;
-  }
-
-  learn (boardState, target, rate) {
-    this.initOptimizer();
-    this.gameStateToInput(boardState);
-    if (rate > 0) {
-      this.optimizer.learning_rate = rate;
-    }
-    this.optimizer.train(this.inputVol, target);
-  }
-
-  toJSON () {
-    this.initModel();
-    return this.net.toJSON();
-  }
-
-  fromJSON (json) {
-    this.net.fromJSON(json);
   }
 }

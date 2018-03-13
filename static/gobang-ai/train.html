@@ -14,19 +14,21 @@
     <div id="gameboard"></div>
     <script src="convnet.js"></script>
     <script src="convnet-model.js"></script>
+    <script src="map-model.js"></script>
     <script src="game.js"></script>
     <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
     <script>
-      const model = new ConvnetModel();
+      // const model = new ConvnetModel();
+      const model = new MapModel();
       try {
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
       (async () => {
         let epoch = 0;
         const ai = [
-          new PlayerAI(model, 0.6),
           new PlayerAI(model, 0.3),
+          new PlayerAI(model, 0.0),
         ];
         let wins = {};
         wins[ai[0].randomness] = 0;

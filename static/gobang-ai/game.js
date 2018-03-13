@@ -3,8 +3,8 @@ const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
 
-const BOARD_SIZE = 7;
-const WIN_CONDITION = 4;
+const BOARD_SIZE = 3;
+const WIN_CONDITION = 3;
 
 class Game {
   constructor (black, white) {
