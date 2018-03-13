@@ -2,6 +2,7 @@
 class ConvnetModel {
   constructor () {
     this.net = new convnetjs.Net();
+    this.inputVol = new convnetjs.Vol(BOARD_SIZE, BOARD_SIZE, 2, 0.0);
   }
 
   initModel () {
@@ -32,21 +33,38 @@ class ConvnetModel {
     }
   }
 
+  gameStateToInput (board) {
+    board.forEach((line, y) => line.forEach((v, x) => {
+      if (v === EMPTY) {
+        this.inputVol.set(x, y, 0, 0.0);
+        this.inputVol.set(x, y, 1, 0.0);
+      } else if (v === this.me) {
+        this.inputVol.set(x, y, 0, 1.0);
+        this.inputVol.set(x, y, 1, 0.0);
+      } else {
+        this.inputVol.set(x, y, 0, 0.0);
+        this.inputVol.set(x, y, 1, 1.0);
+      }
+    }));
+  }
+
   createInput () {
     return new convnetjs.Vol(BOARD_SIZE, BOARD_SIZE, 2, 0.0);
   }
 
-  predict (input, train) {
+  predict (boardState) {
     this.initModel();
-    return this.net.forward(input, train);
+    this.gameStateToInput(boardState);
+    return this.net.forward(this.inputVol).w;
   }
 
-  learn (input, target, rate) {
+  learn (boardState, target, rate) {
     this.initOptimizer();
+    this.gameStateToInput(boardState);
     if (rate > 0) {
       this.optimizer.learning_rate = rate;
     }
-    this.optimizer.train(input, target);
+    this.optimizer.train(this.inputVol, target);
   }
 
   toJSON () {
