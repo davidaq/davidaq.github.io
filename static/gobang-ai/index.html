@@ -8,18 +8,19 @@
   <body>
     <div id="gameboard"></div>
     <script src="game.js"></script>
-    <script src="rl.js"></script>
-    <script src="trained.js"></script>
-    <script src="player-ai.js"></script>
+    <script src="convnet.js"></script>
+    <script src="player-ai-learn.js"></script>
     <script src="player-ui.js"></script>
     <script>
       window.core = '';
-      // try {
-      //   core = JSON.parse(localStorage.goBangCore);
-      // } catch (err) {}
+      const net = new NetModel();
+      try {
+        core = JSON.parse(localStorage.goBangCore);
+        net.fromJSON(core);
+      } catch (err) {}
       window.core = window.trained;
       function start (isBlack) {
-        const players = [new PlayerAI(core)];
+        const players = [new PlayerAILearn(net, 0)];
         const human = new PlayerUI(document.getElementById('gameboard'));
         if (isBlack) {
           players.unshift(human);

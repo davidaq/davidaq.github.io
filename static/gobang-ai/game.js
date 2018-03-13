@@ -3,8 +3,8 @@ const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
 
-const BOARD_SIZE = 5;
-const WIN_CONDITION = 3;
+const BOARD_SIZE = 7;
+const WIN_CONDITION = 4;
 
 class Game {
   constructor (players, train) {
@@ -81,8 +81,6 @@ class Game {
       let open = stat.open[0] + stat.open[1];
       if (count >= WIN_CONDITION) {
         this.isWin = true;
-        this.onReward && this.onReward(this.currentPlayer, 2);
-        this.onReward && this.onReward(3 - this.currentPlayer, -4);
         this.players.forEach(player => {
           player.end(this, this.currentPlayer);
         });
@@ -91,15 +89,12 @@ class Game {
       }
     }
     if (this.remainRound === 0) {
-      this.onReward && this.onReward(this.currentPlayer, -1);
-      this.onReward && this.onReward(3 - this.currentPlayer, -1);
       this.players.forEach(player => {
         player.end(this, TIE);
       });
       this.onEnd && this.onEnd(TIE);
       return true;
     }
-    this.onReward && this.onReward(this.currentPlayer, -0.05);
     return false
   }
 }
