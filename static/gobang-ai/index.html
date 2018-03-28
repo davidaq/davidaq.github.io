@@ -14,15 +14,15 @@
     <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
     <script>
-      // const net = new ConvnetModel();
-      const model = new MapModel();
+      const model = new ConvnetModel();
+      // const model = new MapModel();
       try {
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
 
       const ai = new PlayerAI(model, 0);
       const human = new PlayerUI(document.getElementById('gameboard'));
-      window.game = new Game(human, ai);
+      window.game = new Game(ai, human);
       game.play();
     </script>
   </body>

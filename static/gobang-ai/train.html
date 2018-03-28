@@ -13,14 +13,17 @@
   <body>
     <div id="gameboard"></div>
     <script src="convnet.js"></script>
+    <script src="deeplearn.js"></script>
+    <script src="deeplearn-model.js"></script>
     <script src="convnet-model.js"></script>
     <script src="map-model.js"></script>
     <script src="game.js"></script>
     <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
     <script>
-      // const model = new ConvnetModel();
-      const model = new MapModel();
+      const model = new ConvnetModel();
+      // const model = new MapModel();
+      // const model = new DeeplearnModel();
       try {
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
@@ -28,7 +31,7 @@
         let epoch = 0;
         const ai = [
           new PlayerAI(model, 0.3),
-          new PlayerAI(model, 0.0),
+          new PlayerAI(model, 0.1),
         ];
         let wins = {};
         wins[ai[0].randomness] = 0;
@@ -39,6 +42,9 @@
           }
           const game = new Game(ai[0], ai[1]);
           await game.play();
+          if (game.win) {
+            wins[ai[game.win - 1].randomness] += 1;
+          }
           epoch++;
           displayUI(document.getElementById('gameboard'), game);
           localStorage.goBangCore = JSON.stringify(model.toJSON());

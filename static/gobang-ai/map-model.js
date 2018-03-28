@@ -24,7 +24,9 @@ class MapModel {
 
   learn (boardState, target) {
     const key = this.stateToKey(boardState);
-    this.map[key] = target;
+    this.map[key] = this.map[key].map((v, i) => {
+      return (target[i] - v) * 0.5;
+    });
   }
 
   toJSON () {

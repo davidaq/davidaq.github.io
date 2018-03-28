@@ -3,11 +3,52 @@ const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
 
-const BOARD_SIZE = 3;
-const WIN_CONDITION = 3;
+const BOARD_SIZE = 7;
+const WIN_CONDITION = 4;
 
-class Game {
+class Board {
+  constructor (board) {
+    if (board) {
+      this.board = board.map(line => line.slice());
+    } else {
+      this.board = [];
+      var line = [];
+      this.win = TIE;
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        line.push(EMPTY);
+      }
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        this.board.push(line.slice());
+      }
+    }
+  }
+
+  cloneBoard () {
+    return new Board(this.board);
+  }
+
+  emptyPos () {
+    const available = [];
+    this.board.forEach((line, y) => line.forEach((v, x) => {
+      if (v === EMPTY) {
+        available.push({ x, y });
+      }
+    }));
+    return available;
+  }
+
+  hash () {
+    const ret = []
+    this.board.forEach((line) => line.forEach((v) => {
+      ret.push(v);
+    }));
+    return ret.join('')
+  }
+}
+
+class Game extends Board {
   constructor (black, white) {
+    super();
     this.players = {
       [BLACK]: black,
       [WHITE]: white,
@@ -16,19 +57,6 @@ class Game {
 
     this.remainRound = BOARD_SIZE * BOARD_SIZE;
     this.elapseRound = 0;
-
-    this.board = [];
-    var line = [];
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      line.push(EMPTY);
-    }
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      this.board.push(line.slice());
-    }
-  }
-
-  cloneBoard () {
-    return this.board.map(line => line.slice());
   }
 
   async play () {
@@ -70,6 +98,7 @@ class Game {
       check(1);
       check(-1);
       if (count >= WIN_CONDITION) {
+        this.win = this.currentPlayer;
         this.players[BLACK].end(this, this.currentPlayer);
         this.players[WHITE].end(this, this.currentPlayer);
         return true;
