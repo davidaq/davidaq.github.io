@@ -30,13 +30,19 @@
       (async () => {
         let epoch = 0;
         const ai = [
-          new PlayerAI(model, 0.3),
-          new PlayerAI(model, 0.1),
+          new PlayerAI(model),
+          new PlayerAI(model),
         ];
-        let wins = {};
-        wins[ai[0].randomness] = 0;
-        wins[ai[1].randomness] = 0;
+        let wins = null;
+        let prevTime = Date.now();
         while (true) {
+          if (!wins) {
+            wins = {};
+            ai[0].randomness = (Math.random() * 0.4 + 0.06).toFixed(2) - 0;
+            ai[1].randomness = 0.05;
+            wins[ai[0].randomness] = 0;
+            wins[ai[1].randomness] = 0;
+          }
           if (Math.random() < 0.5) {
             ([ai[0], ai[1]] = [ai[1], ai[0]]);
           }
@@ -46,13 +52,15 @@
             wins[ai[game.win - 1].randomness] += 1;
           }
           epoch++;
-          displayUI(document.getElementById('gameboard'), game);
-          localStorage.goBangCore = JSON.stringify(model.toJSON());
-          await new Promise(r => setTimeout(r, 1));
+          if (epoch % 5 == 0) {
+            displayUI(document.getElementById('gameboard'), game);
+            await new Promise(r => setTimeout(r, 1));
+          }
           if (epoch % 100 === 0) {
-            console.log('epoch:', epoch, 'avgError:', ai[0].avgError().toFixed(5), wins);
-            wins[ai[0].randomness] = 0;
-            wins[ai[1].randomness] = 0;
+            localStorage.goBangCore = JSON.stringify(model.toJSON());
+            console.log('epoch:', epoch, 'avgError:', ai[0].avgError().toFixed(5), wins, Date.now() - prevTime);
+            prevTime = Date.now();
+            wins = null;
           }
         }
       })();

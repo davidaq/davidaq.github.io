@@ -50,7 +50,7 @@ class ConvnetModel {
     if (!this.optimizer) {
       this.optimizer = new convnetjs.Trainer(this.net, {
         method: 'adagrad',
-        batch_size: 400,
+        batch_size: 100,
       });
     }
   }
