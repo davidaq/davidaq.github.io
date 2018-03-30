@@ -1,38 +1,13 @@
 
-class RoundQueue {
-  constructor (limit) {
-    this.limit = limit;
-    this.list = [];
-    this.i = 0;
-  }
-
-  add (item) {
-    const droped = this.list[this.i];
-    this.list[this.i] = item;
-    this.i++;
-    if (this.i >= this.limit) {
-      this.i = 0;
-    }
-    return droped;
-  }
-
-  full () {
-    return this.list.length >= this.limit;
-  }
-
-  getRandom () {
-    return this.list[Math.floor(Math.random() * this.list.length)];
-  }
-}
-
 class PlayerAI {
-  constructor (model, randomness = 0.5) {
+  constructor (model, randomness = 0.5, train = true) {
     this.model = model;
     this.randomness = randomness;
+    this.shouldTrain = train;
 
     this.gamma = 0.9;
     this.seenList = new RoundQueue(10000);
-    this.experience = new RoundQueue(1000);
+    this.experience = new RoundQueue(100);
 
     this.lastDecision = null;
     this.seenSet = {};
@@ -89,7 +64,7 @@ class PlayerAI {
   }
 
   reward (reward, endGame) {
-    if (!this.lastDecision) {
+    if (!this.lastDecision || !this.shouldTrain) {
       return;
     }
     const { state, action } = this.lastDecision;
@@ -146,7 +121,7 @@ class PlayerAI {
     if (this.errors.length > 1000) {
       this.errorSum -= this.errors.shift();
     }
-    this.model.learn(state, predict);
+    this.model.learn(state, predict, predictError);
   }
 
   flipGameState (state) {
@@ -194,4 +169,30 @@ class PlayerAI {
     return best;
   }
   
+}
+
+class RoundQueue {
+  constructor (limit) {
+    this.limit = limit;
+    this.list = [];
+    this.i = 0;
+  }
+
+  add (item) {
+    const droped = this.list[this.i];
+    this.list[this.i] = item;
+    this.i++;
+    if (this.i >= this.limit) {
+      this.i = 0;
+    }
+    return droped;
+  }
+
+  full () {
+    return this.list.length >= this.limit;
+  }
+
+  getRandom () {
+    return this.list[Math.floor(Math.random() * this.list.length)];
+  }
 }

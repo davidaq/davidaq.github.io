@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf=8">
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
     <title>五子棋AI</title>
     <style>
@@ -20,48 +21,73 @@
     <script src="game.js"></script>
     <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
+    <script src="selfplay.js"></script>
     <script>
+      const learnQueue = [];
+      const workers = [];
+      let plays = 0;
+      for (let i = 0; i < 4; i++) {
+        const worker = new Worker('worker.js');
+        worker.onmessage = (e) => {
+          const { play, boardState, target, error } = e.data;
+          if (play) {
+            plays += play;
+          } else {
+            learnQueue.push({ boardState, target, error });
+          }
+        };
+        workers.push(worker);
+      }
+      function broadcast (message) {
+        workers.forEach(worker => worker.postMessage(message));
+      }
       const model = new ConvnetModel();
-      // const model = new MapModel();
-      // const model = new DeeplearnModel();
       try {
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
+      // const model = new MapModel();
+      // const model = new DeeplearnModel();
       (async () => {
+        let randomness = null;
+        let winStat = null;
         let epoch = 0;
-        const ai = [
-          new PlayerAI(model),
-          new PlayerAI(model),
-        ];
-        let wins = null;
-        let prevTime = Date.now();
+        broadcast({ model: model.toJSON() });
         while (true) {
-          if (!wins) {
-            wins = {};
-            ai[0].randomness = (Math.random() * 0.4 + 0.06).toFixed(2) - 0;
-            ai[1].randomness = 0.05;
-            wins[ai[0].randomness] = 0;
-            wins[ai[1].randomness] = 0;
+          if (!randomness) {
+            randomness = [0.09, (Math.random() * 0.3 + 0.1).toFixed(1) - 0];
           }
-          if (Math.random() < 0.5) {
-            ([ai[0], ai[1]] = [ai[1], ai[0]]);
+          if (learnQueue.length === 0) {
+            broadcast({ play: 50, randomness });
           }
-          const game = new Game(ai[0], ai[1]);
-          await game.play();
-          if (game.win) {
-            wins[ai[game.win - 1].randomness] += 1;
+          const { wins, game } = await startSelfPlay(model, 1, randomness, false);
+          if (!winStat) {
+            winStat = wins;
+          } else {
+            Object.keys(wins).forEach(k => {
+              winStat[k] += wins[k];
+            });
           }
+          learnQueue.sort((a, b) => b.error - a.error);
+          const maxError = learnQueue[0] ? learnQueue[0].error : 0;
+          learnQueue.slice(0, 50).forEach(({ boardState, target}) => {
+            model.learn(boardState, target);
+          });
+          learnQueue.length = 0;
           epoch++;
-          if (epoch % 5 == 0) {
-            displayUI(document.getElementById('gameboard'), game);
-            await new Promise(r => setTimeout(r, 1));
+          if (epoch % 20 === 1) {
+            console.log(
+              'plays:', plays,
+              'maxError:', maxError.toFixed(3),
+              'winStat:', winStat
+            );
+            randomness = null;
+            winStat = null;
+            displayUI(document.getElementById('gameboard'), game.board);
+            const modelJson = model.toJSON();
+            broadcast({ model: modelJson });
+            localStorage.goBangCore = JSON.stringify(modelJson);
           }
-          if (epoch % 100 === 0) {
-            localStorage.goBangCore = JSON.stringify(model.toJSON());
-            console.log('epoch:', epoch, 'avgError:', ai[0].avgError().toFixed(5), wins, Date.now() - prevTime);
-            prevTime = Date.now();
-            wins = null;
-          }
+          await new Promise(r => setTimeout(r, 100));
         }
       })();
     </script>

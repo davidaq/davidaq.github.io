@@ -1,6 +1,6 @@
 const CELL_SIZE = 50;
 
-function displayUI ($dom, game, onSelect) {
+function displayUI ($dom, board, onSelect) {
   $dom.innerHTML = '';
   const boardWidth = CELL_SIZE * (BOARD_SIZE - 0.25)
   Object.assign($dom.style, {
@@ -35,7 +35,7 @@ function displayUI ($dom, game, onSelect) {
       zIndex: 0,
     });
     $dom.appendChild($col);
-    const line = game.board[y];
+    const line = board[y];
     for (let x = 0; x < BOARD_SIZE; x++) {
       const positionState = line[x];
       const $pos = document.createElement('div');
@@ -87,14 +87,14 @@ class PlayerUI {
 
   decide (game) {
     return new Promise(resolve => {
-      displayUI(this.$dom, game, (x, y) => {
+      displayUI(this.$dom, game.board, (x, y) => {
         resolve([x, y]);
       });
     });
   }
 
   end (game, result) {
-    displayUI(this.$dom, game);
+    displayUI(this.$dom, game.board);
     setTimeout(() => {
       if (result === TIE) alert('平局');
       if (result === BLACK) alert('黑子赢');
