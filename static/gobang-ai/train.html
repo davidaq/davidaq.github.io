@@ -25,13 +25,13 @@
     <script>
       const learnQueue = [];
       const workers = [];
-      let plays = 0;
-      for (let i = 0; i < 4; i++) {
+      let playedGames = 0;
+      for (let i = 0; i < 2; i++) {
         const worker = new Worker('worker.js');
         worker.onmessage = (e) => {
           const { play, boardState, target, error } = e.data;
           if (play) {
-            plays += play;
+            playedGames += play;
           } else {
             learnQueue.push({ boardState, target, error });
           }
@@ -45,21 +45,28 @@
       try {
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
-      // const model = new MapModel();
-      // const model = new DeeplearnModel();
-      (async () => {
-        let randomness = null;
-        let winStat = null;
-        let epoch = 0;
+
+      setTimeout(async () => {
         broadcast({ model: model.toJSON() });
         while (true) {
-          if (!randomness) {
-            randomness = [0.09, (Math.random() * 0.3 + 0.1).toFixed(1) - 0];
-          }
-          if (learnQueue.length === 0) {
+          if (learnQueue.length < 1000) {
+            const randomness = [0.09, (Math.random() * 0.3 + 0.1).toFixed(1) - 0];
             broadcast({ play: 50, randomness });
           }
-          const { wins, game } = await startSelfPlay(model, 1, randomness, false);
+          await new Promise(r => setTimeout(r, 100));
+        }
+      }, 10);
+      // const model = new MapModel();
+      // const model = new DeeplearnModel();
+      setTimeout(async () => {
+        let randomness = null;
+        let winStat = null;
+        while (true) {
+          await idle();
+          if (learnQueue.length === 0) {
+            await new Promise(r => setTimeout(r, 100));
+          }
+          const { wins, game } = await startSelfPlay(model, { train: false });
           if (!winStat) {
             winStat = wins;
           } else {
@@ -67,29 +74,35 @@
               winStat[k] += wins[k];
             });
           }
-          learnQueue.sort((a, b) => b.error - a.error);
-          const maxError = learnQueue[0] ? learnQueue[0].error : 0;
-          learnQueue.slice(0, 50).forEach(({ boardState, target}) => {
+          const queue = learnQueue.splice(0, 1000);
+          const maxError = Math.max.apply(Math, queue.map(v => v.error));
+          for (const { boardState, target } of queue) {
             model.learn(boardState, target);
-          });
-          learnQueue.length = 0;
-          epoch++;
-          if (epoch % 20 === 1) {
-            console.log(
-              'plays:', plays,
-              'maxError:', maxError.toFixed(3),
-              'winStat:', winStat
-            );
-            randomness = null;
-            winStat = null;
-            displayUI(document.getElementById('gameboard'), game.board);
-            const modelJson = model.toJSON();
-            broadcast({ model: modelJson });
-            localStorage.goBangCore = JSON.stringify(modelJson);
+            await idle();
           }
-          await new Promise(r => setTimeout(r, 100));
+          console.log(
+            'plays:', playedGames,
+            'pending:', learnQueue.length,
+            'maxError:', maxError.toFixed(3),
+            'winStat:', winStat
+          );
+          randomness = null;
+          winStat = null;
+          displayUI(document.getElementById('gameboard'), game.board);
+          const modelJson = model.toJSON();
+          broadcast({ model: modelJson });
+          localStorage.goBangCore = JSON.stringify(modelJson);
         }
-      })();
+      }, 10);
+
+      let prevIdleTime = Date.now();
+      async function idle () {
+        const now = Date.now()
+        if (now - prevIdleTime > 100) {
+          prevIdleTime = now;
+          await new Promise(r => setTimeout(r, 10));
+        }
+      }
     </script>
   </body>
 </html>

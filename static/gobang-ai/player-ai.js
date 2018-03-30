@@ -6,11 +6,11 @@ class PlayerAI {
     this.shouldTrain = train;
 
     this.gamma = 0.9;
-    this.seenList = new RoundQueue(10000);
+    this.seenSet = {};
+    this.seenList = new RoundQueue(100000);
     this.experience = new RoundQueue(100);
 
     this.lastDecision = null;
-    this.seenSet = {};
     this.errors = [];
     this.errorSum = 0;
   }

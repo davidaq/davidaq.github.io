@@ -17,7 +17,10 @@ onmessage = async (e) => {
   if (e.data.model) {
     model.fromJSON(e.data.model);
   } else if (e.data.play) {
-    await startSelfPlay(model, e.data.play, e.data.randomness);
+    await startSelfPlay(model, {
+      rounds: e.data.play,
+      randomness: e.data.randomness,
+    });
     postMessage({ play: e.data.play });
   }
 }
