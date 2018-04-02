@@ -20,6 +20,6 @@ async function startSelfPlay (model, options) {
       wins[ai[game.win - 1].randomness] += 1;
     }
   }
-  return { wins, avgError: ai[0].avgError(), game };
+  return { wins, game };
 }
 

@@ -11,8 +11,6 @@ class PlayerAI {
     this.experience = new RoundQueue(100);
 
     this.lastDecision = null;
-    this.errors = [];
-    this.errorSum = 0;
   }
 
   decide (game) {
@@ -113,15 +111,7 @@ class PlayerAI {
         state[oy][ox] = EMPTY;
       }
     }
-    const predict = this.model.predict(state);
-    const predictError = Math.abs(qmax - predict[action]);
-    predict[action] = qmax;
-    this.errors.push(predictError);
-    this.errorSum += predictError;
-    if (this.errors.length > 1000) {
-      this.errorSum -= this.errors.shift();
-    }
-    this.model.learn(state, predict, predictError);
+    this.model.learn(state, action, qmax);
   }
 
   flipGameState (state) {
@@ -137,13 +127,6 @@ class PlayerAI {
         }
       }
     }
-  }
-
-  avgError () {
-    if (this.errors.length === 0) {
-      return 0;
-    }
-    return this.errorSum / this.errors.length;
   }
 
   actionToCoord (action) {

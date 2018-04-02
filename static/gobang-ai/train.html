@@ -23,17 +23,26 @@
     <script src="player-ui.js"></script>
     <script src="selfplay.js"></script>
     <script>
+      const WORKER_COUNT = 4;
       const learnQueue = [];
       const workers = [];
       let playedGames = 0;
-      for (let i = 0; i < 2; i++) {
+      let waitingWorkers = WORKER_COUNT;
+      let allWorkersReady;
+      const workersReady = new Promise(r => { allWorkersReady = r });
+      for (let i = 0; i < 4; i++) {
         const worker = new Worker('worker.js');
         worker.onmessage = (e) => {
-          const { play, boardState, target, error } = e.data;
-          if (play) {
+          const { ready, play, boardState, target, action } = e.data;
+          if (ready) {
+            waitingWorkers--;
+            if (waitingWorkers === 0) {
+              allWorkersReady();
+            }
+          } else if (play) {
             playedGames += play;
           } else {
-            learnQueue.push({ boardState, target, error });
+            learnQueue.push({ boardState, target, action });
           }
         };
         workers.push(worker);
@@ -46,54 +55,39 @@
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
 
-      setTimeout(async () => {
+      workersReady.then(async () => {
         broadcast({ model: model.toJSON() });
         while (true) {
-          if (learnQueue.length < 1000) {
-            const randomness = [0.09, (Math.random() * 0.3 + 0.1).toFixed(1) - 0];
-            broadcast({ play: 50, randomness });
-          }
-          await new Promise(r => setTimeout(r, 100));
-        }
-      }, 10);
-      // const model = new MapModel();
-      // const model = new DeeplearnModel();
-      setTimeout(async () => {
-        let randomness = null;
-        let winStat = null;
-        while (true) {
           await idle();
+          broadcast({ pause: learnQueue.length > 1000 });
           if (learnQueue.length === 0) {
             await new Promise(r => setTimeout(r, 100));
-          }
-          const { wins, game } = await startSelfPlay(model, { train: false });
-          if (!winStat) {
-            winStat = wins;
           } else {
-            Object.keys(wins).forEach(k => {
-              winStat[k] += wins[k];
-            });
+            const queue = learnQueue.splice(0, 1000);
+            let avgError = 0;
+            let maxError = 0;
+            for (const { boardState, action, target } of queue) {
+              const error = model.learn(boardState, action, target);
+              maxError = Math.max(error, maxError);
+              avgError += error / queue.length;
+              await idle();
+            }
+
+            const { wins, game } = await startSelfPlay(model, { train: false, rounds: 5 });
+            console.log(
+              'plays:', playedGames,
+              'pending:', learnQueue.length,
+              'avgErr:', avgError.toFixed(3) - 0,
+              'maxErr:', maxError.toFixed(3) - 0,
+              'wins:', wins
+            );
+            displayUI(document.getElementById('gameboard'), game.board);
+            const modelJson = model.toJSON();
+            broadcast({ model: modelJson });
+            localStorage.goBangCore = JSON.stringify(modelJson);
           }
-          const queue = learnQueue.splice(0, 1000);
-          const maxError = Math.max.apply(Math, queue.map(v => v.error));
-          for (const { boardState, target } of queue) {
-            model.learn(boardState, target);
-            await idle();
-          }
-          console.log(
-            'plays:', playedGames,
-            'pending:', learnQueue.length,
-            'maxError:', maxError.toFixed(3),
-            'winStat:', winStat
-          );
-          randomness = null;
-          winStat = null;
-          displayUI(document.getElementById('gameboard'), game.board);
-          const modelJson = model.toJSON();
-          broadcast({ model: modelJson });
-          localStorage.goBangCore = JSON.stringify(modelJson);
         }
-      }, 10);
+      });
 
       let prevIdleTime = Date.now();
       async function idle () {

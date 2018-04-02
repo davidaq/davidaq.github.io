@@ -13,14 +13,34 @@ class ConvnetModel {
 
   predict (boardState) {
     this.initModel();
-    this.gameStateToInput(boardState);
-    return this.net.forward(this.inputVol).w;
+    const ret = new Float32Array(BOARD_SIZE * BOARD_SIZE);
+    let i = 0;
+    boardState.forEach((line, y) => {
+      line.forEach((v, x) => {
+        if (v === EMPTY) {
+          boardState[y][x] = BLACK;
+          this.gameStateToInput(boardState);
+          boardState[y][x] = EMPTY;
+          ret[i] = this.net.forward(this.inputVol).w[0];
+        } else {
+          ret[i] = -9999;
+        }
+        i++;
+      })
+    });
+    return ret;
   }
 
-  learn (boardState, target) {
+  learn (boardState, action, target) {
     this.initOptimizer();
+    const x = action % BOARD_SIZE;
+    const y = Math.floor(action / BOARD_SIZE);
+    boardState[y][x] = BLACK;
     this.gameStateToInput(boardState);
+    boardState[y][x] = EMPTY;
+    const predict = this.net.forward(this.inputVol).w[0];
     this.optimizer.train(this.inputVol, target);
+    return Math.abs(predict - target);
   }
 
   toJSON () {
@@ -36,12 +56,9 @@ class ConvnetModel {
     if (this.net.layers.length === 0) {
       this.net.makeLayers([
         { type: 'input', out_sx: BOARD_SIZE, out_sy: BOARD_SIZE, out_depth: 2 },
-        { type: 'fc', num_neurons: BOARD_SIZE * BOARD_SIZE * 4, activation: 'relu' },
-        //{ type: 'conv', sx: 2, stride: 1, pad: 0, filters: BOARD_SIZE * 5 },
-        //{ type: 'pool', sx: 2, stride: 2 },
-        //{ type: 'conv', sx: 2, stride: 1, pad: 0, filters: BOARD_SIZE * 20 },
-        //{ type: 'pool', sx: 2, stride: 2 },
-        { type: 'regression', num_neurons: BOARD_SIZE * BOARD_SIZE },
+        { type: 'fc', num_neurons: BOARD_SIZE * BOARD_SIZE * 2, activation: 'relu' },
+        { type: 'fc', num_neurons: BOARD_SIZE * BOARD_SIZE, activation: 'relu' },
+        { type: 'regression', num_neurons: 1 },
       ]);
     }
   }
@@ -50,7 +67,7 @@ class ConvnetModel {
     if (!this.optimizer) {
       this.optimizer = new convnetjs.Trainer(this.net, {
         method: 'adagrad',
-        batch_size: 300,
+        batch_size: 10,
       });
     }
   }
@@ -60,7 +77,7 @@ class ConvnetModel {
       if (v === EMPTY) {
         this.inputVol.set(x, y, 0, 0.0);
         this.inputVol.set(x, y, 1, 0.0);
-      } else if (v === this.me) {
+      } else if (v === BLACK) {
         this.inputVol.set(x, y, 0, 1.0);
         this.inputVol.set(x, y, 1, 0.0);
       } else {
