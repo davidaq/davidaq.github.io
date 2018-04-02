@@ -14,7 +14,7 @@ class PlayerAI {
   }
 
   decide (game) {
-    this.reward(-1);
+    this.reward(-0.01);
     this.me = game.currentPlayer;
     const clonedGame = game.cloneBoard();
     const state = clonedGame.board;
@@ -51,11 +51,11 @@ class PlayerAI {
 
   end (game, result) {
     if (result === TIE) {
-      this.reward(-20, true);
+      this.reward(-0.1, true);
     } else if (result === this.me) {
-      this.reward(40, true);
+      this.reward(0.2, true);
     } else {
-      this.reward(-80, true);
+      this.reward(-0.4, true);
     }
     this.lastDecision = null;
   }
@@ -78,7 +78,7 @@ class PlayerAI {
     }
     this.learn(expr);
     if (this.experience.full()) {
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 5; i++) {
         this.learn(this.experience.getRandom());
       }
     }
@@ -91,7 +91,6 @@ class PlayerAI {
       const opponentPrediction = this.model.predict(stateForOpponent);
       const opponentBestAction = this.bestPossibleAction(stateForOpponent, opponentPrediction);
       if (opponentBestAction > -1) {
-        qmax -= this.gamma * opponentPrediction[opponentBestAction];
         const { x: mx, y: my } = this.actionToCoord(action);
         const { x: ox, y: oy } = this.actionToCoord(opponentBestAction);
         state[my][mx] = BLACK;

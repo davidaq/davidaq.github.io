@@ -21,7 +21,7 @@ setTimeout(async () => {
       await new Promise(r => setTimeout(r, 100));
     } else {
       const randomness = [0.1, Math.random() * 0.5 + 0.1];
-      const rounds = 5;
+      const rounds = 10;
       await startSelfPlay(model, { rounds, randomness });
       postMessage({ play: rounds });
       await new Promise(r => setTimeout(r, 10));

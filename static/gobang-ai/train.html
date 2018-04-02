@@ -23,14 +23,14 @@
     <script src="player-ui.js"></script>
     <script src="selfplay.js"></script>
     <script>
-      const WORKER_COUNT = 4;
+      const WORKER_COUNT = 8;
       const learnQueue = [];
       const workers = [];
       let playedGames = 0;
       let waitingWorkers = WORKER_COUNT;
       let allWorkersReady;
       const workersReady = new Promise(r => { allWorkersReady = r });
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < WORKER_COUNT; i++) {
         const worker = new Worker('worker.js');
         worker.onmessage = (e) => {
           const { ready, play, boardState, target, action } = e.data;
@@ -52,7 +52,7 @@
       }
       const model = new ConvnetModel();
       try {
-        model.fromJSON(JSON.parse(localStorage.goBangCore));
+        //model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
 
       workersReady.then(async () => {

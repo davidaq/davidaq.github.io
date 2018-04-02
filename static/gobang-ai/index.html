@@ -21,7 +21,7 @@
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
 
-      const ai = new PlayerAI(model, 0);
+      const ai = new PlayerAI(model, 0, false);
       const human = new PlayerUI(document.getElementById('gameboard'));
       window.game = new Game(ai, human);
       game.play();

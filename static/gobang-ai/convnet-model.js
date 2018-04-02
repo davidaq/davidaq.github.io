@@ -56,9 +56,9 @@ class ConvnetModel {
     if (this.net.layers.length === 0) {
       this.net.makeLayers([
         { type: 'input', out_sx: BOARD_SIZE, out_sy: BOARD_SIZE, out_depth: 2 },
-        { type: 'fc', num_neurons: BOARD_SIZE * BOARD_SIZE * 2, activation: 'relu' },
         { type: 'fc', num_neurons: BOARD_SIZE * BOARD_SIZE, activation: 'relu' },
-        { type: 'regression', num_neurons: 1 },
+        { type: 'fc', num_neurons: BOARD_SIZE, activation: 'relu' },
+        { type: 'regression', num_neurons: 1 }
       ]);
     }
   }
@@ -67,7 +67,7 @@ class ConvnetModel {
     if (!this.optimizer) {
       this.optimizer = new convnetjs.Trainer(this.net, {
         method: 'adagrad',
-        batch_size: 10,
+        batch_size: 200,
       });
     }
   }
