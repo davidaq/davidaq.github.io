@@ -58,7 +58,6 @@ class PlayerAI {
       this.reward(-80, true);
     }
     this.lastDecision = null;
-    this.offlineModel = null;
   }
 
   reward (reward, endGame) {
@@ -79,16 +78,13 @@ class PlayerAI {
     }
     this.learn(expr);
     if (this.experience.full()) {
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 10; i++) {
         this.learn(this.experience.getRandom());
       }
     }
   }
 
   learn (expr) {
-    if (!this.offlineModel) {
-      //this.offlineModel = this.model.clone();
-    }
     const { state, action, reward, stateForOpponent } = expr;
     let qmax = reward;
     if (stateForOpponent) {
@@ -103,8 +99,6 @@ class PlayerAI {
         const futurePrediction = this.model.predict(state);
         const futureBestAction = this.bestPossibleAction(state, futurePrediction);
         if (futureBestAction > -1) {
-          //const offlineFuturePrediction = this.offlineModel.predict(state);
-          //qmax += this.gamma * offlineFuturePrediction[futureBestAction];
           qmax += this.gamma * futurePrediction[futureBestAction];
         }
         state[my][mx] = EMPTY;
