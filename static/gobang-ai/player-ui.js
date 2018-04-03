@@ -1,6 +1,6 @@
 const CELL_SIZE = 50;
 
-function displayUI ($dom, board, onSelect) {
+function displayUI ($dom, state, onSelect) {
   $dom.innerHTML = '';
   const boardWidth = CELL_SIZE * (BOARD_SIZE - 0.25)
   Object.assign($dom.style, {
@@ -35,9 +35,8 @@ function displayUI ($dom, board, onSelect) {
       zIndex: 0,
     });
     $dom.appendChild($col);
-    const line = board[y];
     for (let x = 0; x < BOARD_SIZE; x++) {
-      const positionState = line[x];
+      const positionState = state.get(x, y);
       const $pos = document.createElement('div');
       Object.assign($pos.style, {
         position: 'absolute',
