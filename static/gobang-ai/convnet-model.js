@@ -11,33 +11,31 @@ class ConvnetModel {
     return ret;
   }
 
-  predict (boardState) {
+  predict (state) {
     this.initModel();
     const ret = new Float32Array(BOARD_SIZE * BOARD_SIZE);
     let i = 0;
-    boardState.forEach((line, y) => {
-      line.forEach((v, x) => {
-        if (v === EMPTY) {
-          boardState[y][x] = BLACK;
-          this.gameStateToInput(boardState);
-          boardState[y][x] = EMPTY;
-          ret[i] = this.net.forward(this.inputVol).w[0];
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        if (state.get(x, y) === EMPTY) {
+          state.set(x, y, BLACK);
+          this.gameStateToInput(state);
+          state.set(x, y, EMPTY);
+          ret[i++] = this.net.forward(this.inputVol).w[0];
         } else {
-          ret[i] = -9999;
+          ret[i++] = -999.0;
         }
-        i++;
-      })
-    });
+      }
+    }
     return ret;
   }
 
-  learn (boardState, action, target) {
+  learn (state, action, target) {
     this.initOptimizer();
-    const x = action % BOARD_SIZE;
-    const y = Math.floor(action / BOARD_SIZE);
-    boardState[y][x] = BLACK;
-    this.gameStateToInput(boardState);
-    boardState[y][x] = EMPTY;
+    const { x, y } = state.actionToCoord(action);
+    state.set(x, y, BLACK);
+    this.gameStateToInput(state);
+    state.set(x, y, EMPTY);
     const predict = this.net.forward(this.inputVol).w[0];
     this.optimizer.train(this.inputVol, target);
     return Math.abs(predict - target);
@@ -67,24 +65,30 @@ class ConvnetModel {
     if (!this.optimizer) {
       this.optimizer = new convnetjs.Trainer(this.net, {
         method: 'adagrad',
-        batch_size: 200,
+        batch_size: 10,
       });
     }
   }
 
-  gameStateToInput (board) {
-    board.forEach((line, y) => line.forEach((v, x) => {
-      if (v === EMPTY) {
-        this.inputVol.set(x, y, 0, 0.0);
-        this.inputVol.set(x, y, 1, 0.0);
-      } else if (v === BLACK) {
-        this.inputVol.set(x, y, 0, 1.0);
-        this.inputVol.set(x, y, 1, 0.0);
-      } else {
-        this.inputVol.set(x, y, 0, 0.0);
-        this.inputVol.set(x, y, 1, 1.0);
+  gameStateToInput (state) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        switch (state.get(x, y)) {
+          case EMPTY:
+            this.inputVol.set(x, y, 0, 0.0);
+            this.inputVol.set(x, y, 1, 0.0);
+            break;
+          case BLACK:
+            this.inputVol.set(x, y, 0, 1.0);
+            this.inputVol.set(x, y, 1, 0.0);
+            break;
+          case WHITE:
+            this.inputVol.set(x, y, 0, 0.0);
+            this.inputVol.set(x, y, 1, 1.0);
+            break;
+        }
       }
-    }));
+    }
   }
 }
 

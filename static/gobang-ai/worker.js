@@ -16,13 +16,13 @@ const model = new WorkerModel();
 let paused = true;
 
 setTimeout(async () => {
+  const context = {};
   while (true) {
     if (paused) {
       await new Promise(r => setTimeout(r, 100));
     } else {
-      const randomness = [0.1, Math.random() * 0.5 + 0.1];
       const rounds = 10;
-      await startSelfPlay(model, { rounds, randomness });
+      await startSelfPlay(model, { rounds, train: true, context });
       postMessage({ play: rounds });
       await new Promise(r => setTimeout(r, 10));
     }

@@ -13,31 +13,35 @@ class PlayerAI {
     this.lastDecision = null;
   }
 
-  decide (game) {
+  decide (state) {
     this.reward(-0.01);
-    this.me = game.currentPlayer;
-    const clonedGame = game.cloneBoard();
-    const state = clonedGame.board;
-    if (this.me === WHITE) {
-      this.flipGameState(state);
+    if (state.currentPlayer === WHITE) {
+      state.flip();
     }
-    const stateHash = clonedGame.hash();
+    const stateHash = state.hash();
     const random = Math.random() < this.randomness;
     let x, y;
     if (random) {
-      const available = clonedGame.emptyPos();
+      const available = state.emptyPos();
       if (available.length === 0) {
         throw new Error('No possible action');
       }
-      const availableNew = available.filter(({x, y}) => !this.seenSet[`${stateHash}.${x}.${y}`])
+      const availableNew = available.filter(({x, y}) => {
+        state.set(x, y, BLACK);
+        const hash = state.hash();
+        state.set(x, y, EMPTY);
+        return !this.seenSet[hash];
+      });
       const candidate = availableNew.length > 0 ? availableNew : available;
       ({ x, y }  = candidate[Math.floor(Math.random() * candidate.length)]);
     } else {
       const prediction = this.model.predict(state);
       const action = this.bestPossibleAction(state, prediction);
-      ({ x, y } = this.actionToCoord(action));
+      ({ x, y } = state.actionToCoord(action));
     }
-    const hash = `${stateHash}.${x}.${y}`;
+    state.set(x, y, BLACK);
+    const hash = state.hash();
+    state.set(x, y, EMPTY);
     if (!this.seenSet[hash]) {
       this.seenSet[hash] = true;
       const droped = this.seenList.add(hash);
@@ -46,13 +50,11 @@ class PlayerAI {
       }
     }
     this.lastDecision = { state, action: x + y * BOARD_SIZE };
-    return Promise.resolve([x, y]);
+    return Promise.resolve({ x, y });
   }
 
-  end (game, result) {
-    if (result === TIE) {
-      this.reward(-0.1, true);
-    } else if (result === this.me) {
+  end (state, isWin) {
+    if (isWin) {
       this.reward(0.2, true);
     } else {
       this.reward(-0.4, true);
@@ -67,18 +69,18 @@ class PlayerAI {
     const { state, action } = this.lastDecision;
     let stateForOpponent;
     if (!endGame) {
-      stateForOpponent = state.map(v => v.slice());
-      const { x, y } = this.actionToCoord(action);
-      stateForOpponent[y][x] = BLACK;
-      this.flipGameState(stateForOpponent);
+      stateForOpponent = state.clone();
+      const { x, y } = state.actionToCoord(action);
+      stateForOpponent.set(x, y, BLACK);
+      stateForOpponent.flip();
     }
     const expr = { state, action, reward, stateForOpponent };
-    if (endGame || Math.random() < 0.3) {
+    if (endGame || Math.random() < 0.2) {
       this.experience.add(expr);
     }
     this.learn(expr);
     if (this.experience.full()) {
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 100; i++) {
         this.learn(this.experience.getRandom());
       }
     }
@@ -91,42 +93,20 @@ class PlayerAI {
       const opponentPrediction = this.model.predict(stateForOpponent);
       const opponentBestAction = this.bestPossibleAction(stateForOpponent, opponentPrediction);
       if (opponentBestAction > -1) {
-        const { x: mx, y: my } = this.actionToCoord(action);
-        const { x: ox, y: oy } = this.actionToCoord(opponentBestAction);
-        state[my][mx] = BLACK;
-        state[oy][ox] = WHITE;
+        const { x: mx, y: my } = state.actionToCoord(action);
+        const { x: ox, y: oy } = state.actionToCoord(opponentBestAction);
+        state.set(mx, my, BLACK);
+        state.set(ox, oy, WHITE);
         const futurePrediction = this.model.predict(state);
         const futureBestAction = this.bestPossibleAction(state, futurePrediction);
         if (futureBestAction > -1) {
           qmax += this.gamma * futurePrediction[futureBestAction];
         }
-        state[my][mx] = EMPTY;
-        state[oy][ox] = EMPTY;
+        state.set(mx, my, EMPTY);
+        state.set(ox, oy, EMPTY);
       }
     }
     this.model.learn(state, action, qmax);
-  }
-
-  flipGameState (state) {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      for (let x = 0; x < BOARD_SIZE; x++) {
-        switch (state[y][x]) {
-          case WHITE:
-            state[y][x] = BLACK;
-            break;
-          case BLACK:
-            state[y][x] = WHITE;
-            break;
-        }
-      }
-    }
-  }
-
-  actionToCoord (action) {
-    return {
-      x: action % BOARD_SIZE,
-      y: Math.floor(action / BOARD_SIZE),
-    }
   }
 
   bestPossibleAction (state, values) {
@@ -135,7 +115,7 @@ class PlayerAI {
     for (let y = 0; y < BOARD_SIZE; y++) {
       for (let x = 0; x < BOARD_SIZE; x++) {
         action++;
-        if (state[y][x] === EMPTY) {
+        if (state.get(x, y) === EMPTY) {
           if (best === -1 || values[action] > values[best]) {
             best = action;
           }
@@ -172,3 +152,4 @@ class RoundQueue {
     return this.list[Math.floor(Math.random() * this.list.length)];
   }
 }
+

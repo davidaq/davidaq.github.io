@@ -6,14 +6,13 @@ const WHITE = 2;
 const BOARD_SIZE = 7;
 const WIN_CONDITION = 4;
 
-class Board {
-  constructor (board) {
+class GameState {
+  constructor (board, currentPlayer) {
     if (board) {
-      this.board = board.map(line => line.slice());
+      this.board = board;
     } else {
       this.board = [];
-      var line = [];
-      this.win = TIE;
+      const line = [];
       for (let i = 0; i < BOARD_SIZE; i++) {
         line.push(EMPTY);
       }
@@ -21,49 +20,82 @@ class Board {
         this.board.push(line.slice());
       }
     }
+    this.currentPlayer = currentPlayer || BLACK;
   }
 
-  cloneBoard () {
-    return new Board(this.board);
+  clone () {
+    return new GameState(this.board.map(line => line.slice()), this.currentPlayer);
+  }
+
+  set (x, y, val) {
+    this.board[y][x] = val;
+  }
+
+  get (x, y) {
+    return this.board[y][x];
   }
 
   emptyPos () {
-    const available = [];
-    this.board.forEach((line, y) => line.forEach((v, x) => {
-      if (v === EMPTY) {
-        available.push({ x, y });
+    const ret = [];
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        switch (this.board[y][x]) {
+          case EMPTY:
+            ret.push({ x, y });
+            break;
+        }
       }
-    }));
-    return available;
+    }
+    return ret;
+  }
+
+  flip () {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        switch (this.board[y][x]) {
+          case WHITE:
+            this.board[y][x] = BLACK;
+            break;
+          case BLACK:
+            this.board[y][x] = WHITE;
+            break;
+        }
+      }
+    }
+    this.currentPlayer = this.currentPlayer === WHITE ? BLACK : WHITE;
+  }
+
+  actionToCoord (action) {
+    const x = action % BOARD_SIZE;
+    const y = Math.floor(action / BOARD_SIZE);
+    return { x, y };
   }
 
   hash () {
-    const ret = []
-    this.board.forEach((line) => line.forEach((v) => {
-      ret.push(v);
-    }));
-    return ret.join('')
+    return this.board.map(line => line.join('')).join('');
   }
 }
 
-class Game extends Board {
-  constructor (black, white) {
-    super();
+class Game {
+  constructor (blackPlayer, whitePlayer) {
     this.players = {
-      [BLACK]: black,
-      [WHITE]: white,
+      [BLACK]: blackPlayer,
+      [WHITE]: whitePlayer,
     };
+    this.state = new GameState();
     this.currentPlayer = BLACK;
-
     this.remainRound = BOARD_SIZE * BOARD_SIZE;
     this.elapseRound = 0;
   }
 
   async play () {
-    const [x, y] = await this.players[this.currentPlayer].decide(this);
+    const currentPlayerInst = this.players[this.currentPlayer];
+    const state = this.state.clone();
+    state.currentPlayer = this.currentPlayer;
+    const { x, y } = await currentPlayerInst.decide(state);
     this.remainRound--;
     this.elapseRound++;
-    this.board[y][x] = this.currentPlayer;
+    this.state.set(x, y, this.currentPlayer);
     if (!this.checkWin(x, y)) {
       this.currentPlayer = this.currentPlayer === WHITE ? BLACK : WHITE;
       await this.play();
@@ -87,7 +119,7 @@ class Game extends Board {
           var cx = x - dx * j * dir;
           var cy = y - dy * j * dir;
           if (cx >= 0 && cx < BOARD_SIZE && cy >= 0 && cy < BOARD_SIZE) {
-            if (this.board[cy][cx] === this.currentPlayer) {
+            if (this.state.get(cx, cy) === this.currentPlayer) {
               count++;
               continue;
             }
@@ -99,14 +131,14 @@ class Game extends Board {
       check(-1);
       if (count >= WIN_CONDITION) {
         this.win = this.currentPlayer;
-        this.players[BLACK].end(this, this.currentPlayer);
-        this.players[WHITE].end(this, this.currentPlayer);
+        this.players[BLACK].end(this.state, this.currentPlayer === BLACK);
+        this.players[WHITE].end(this.state, this.currentPlayer === WHITE);
         return true;
       }
     }
     if (this.remainRound === 0) {
-      this.players[BLACK].end(this, TIE);
-      this.players[WHITE].end(this, TIE);
+      this.players[BLACK].end(this.state, false);
+      this.players[WHITE].end(this.state, false);
       return true;
     }
     return false

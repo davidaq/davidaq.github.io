@@ -1,11 +1,16 @@
 
-async function startSelfPlay (model, options) {
+async function startSelfPlay (model, options = {}) {
   const {
-    rounds = 1,
-    randomness = [0.1, 0.4],
-    train = true,
+    rounds = 10,
+    randomness = [0.1, (Math.random() * 0.5 + 0.2).toFixed(1) - 0],
+    train = false,
+    context = {},
   } = options;
-  const ai = randomness.map(r => new PlayerAI(model, r, train));
+  let ai = context.ai;
+  if (!ai) {
+    ai = randomness.map(r => new PlayerAI(model, r, train));
+    context.ai = ai;
+  }
   const wins = {};
   wins[ai[0].randomness] = 0;
   wins[ai[1].randomness] = 0;

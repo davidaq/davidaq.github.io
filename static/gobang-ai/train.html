@@ -23,7 +23,7 @@
     <script src="player-ui.js"></script>
     <script src="selfplay.js"></script>
     <script>
-      const WORKER_COUNT = 8;
+      const WORKER_COUNT = 4;
       const learnQueue = [];
       const workers = [];
       let playedGames = 0;
@@ -52,7 +52,7 @@
       }
       const model = new ConvnetModel();
       try {
-        //model.fromJSON(JSON.parse(localStorage.goBangCore));
+        model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
 
       workersReady.then(async () => {
@@ -67,21 +67,22 @@
             let avgError = 0;
             let maxError = 0;
             for (const { boardState, action, target } of queue) {
-              const error = model.learn(boardState, action, target);
+              const error = model.learn(new GameState(boardState.board), action, target);
               maxError = Math.max(error, maxError);
               avgError += error / queue.length;
               await idle();
             }
 
-            const { wins, game } = await startSelfPlay(model, { train: false, rounds: 5 });
+            const { wins, game } = await startSelfPlay(model);
             console.log(
+              queue.length,
               'plays:', playedGames,
               'pending:', learnQueue.length,
               'avgErr:', avgError.toFixed(3) - 0,
               'maxErr:', maxError.toFixed(3) - 0,
               'wins:', wins
             );
-            displayUI(document.getElementById('gameboard'), game.board);
+            displayUI(document.getElementById('gameboard'), game.state.board);
             const modelJson = model.toJSON();
             broadcast({ model: modelJson });
             localStorage.goBangCore = JSON.stringify(modelJson);
