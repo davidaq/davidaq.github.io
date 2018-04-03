@@ -23,7 +23,7 @@
     <script src="player-ui.js"></script>
     <script src="selfplay.js"></script>
     <script>
-      const WORKER_COUNT = 4;
+      const WORKER_COUNT = 3;
       const learnQueue = [];
       const workers = [];
       let playedGames = 0;
@@ -33,7 +33,7 @@
       for (let i = 0; i < WORKER_COUNT; i++) {
         const worker = new Worker('worker.js');
         worker.onmessage = (e) => {
-          const { ready, play, boardState, target, action } = e.data;
+          const { ready, play, state, target, action } = e.data;
           if (ready) {
             waitingWorkers--;
             if (waitingWorkers === 0) {
@@ -42,7 +42,7 @@
           } else if (play) {
             playedGames += play;
           } else {
-            learnQueue.push({ boardState, target, action });
+            learnQueue.push({ state, target, action });
           }
         };
         workers.push(worker);
@@ -59,15 +59,15 @@
         broadcast({ model: model.toJSON() });
         while (true) {
           await idle();
-          broadcast({ pause: learnQueue.length > 1000 });
-          if (learnQueue.length === 0) {
-            await new Promise(r => setTimeout(r, 100));
+          broadcast({ pause: learnQueue.length > 2000 });
+          if (learnQueue.length < 1000) {
+            await new Promise(r => setTimeout(r, 10));
           } else {
             const queue = learnQueue.splice(0, 1000);
             let avgError = 0;
             let maxError = 0;
             for (const { boardState, action, target } of queue) {
-              const error = model.learn(new GameState(boardState.board), action, target);
+              const error = model.learn(new GameState(boardState), action, target);
               maxError = Math.max(error, maxError);
               avgError += error / queue.length;
               await idle();
@@ -75,14 +75,13 @@
 
             const { wins, game } = await startSelfPlay(model);
             console.log(
-              queue.length,
               'plays:', playedGames,
               'pending:', learnQueue.length,
               'avgErr:', avgError.toFixed(3) - 0,
               'maxErr:', maxError.toFixed(3) - 0,
               'wins:', wins
             );
-            displayUI(document.getElementById('gameboard'), game.state.board);
+            displayUI(document.getElementById('gameboard'), game.state);
             const modelJson = model.toJSON();
             broadcast({ model: modelJson });
             localStorage.goBangCore = JSON.stringify(modelJson);

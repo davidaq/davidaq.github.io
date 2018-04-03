@@ -33,7 +33,7 @@ class PlayerAI {
         return !this.seenSet[hash];
       });
       const candidate = availableNew.length > 0 ? availableNew : available;
-      ({ x, y }  = candidate[Math.floor(Math.random() * candidate.length)]);
+      ({ x, y } = candidate[Math.floor(Math.random() * candidate.length)]);
     } else {
       const prediction = this.model.predict(state);
       const action = this.bestPossibleAction(state, prediction);
@@ -80,7 +80,7 @@ class PlayerAI {
     }
     this.learn(expr);
     if (this.experience.full()) {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 20; i++) {
         this.learn(this.experience.getRandom());
       }
     }

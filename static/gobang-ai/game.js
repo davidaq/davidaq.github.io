@@ -7,9 +7,9 @@ const BOARD_SIZE = 7;
 const WIN_CONDITION = 4;
 
 class GameState {
-  constructor (board, currentPlayer) {
-    if (board) {
-      this.board = board;
+  constructor (from) {
+    if (from) {
+      this.fromJSON(from);
     } else {
       this.board = [];
       const line = [];
@@ -19,12 +19,12 @@ class GameState {
       for (let i = 0; i < BOARD_SIZE; i++) {
         this.board.push(line.slice());
       }
+      this.currentPlayer = BLACK;
     }
-    this.currentPlayer = currentPlayer || BLACK;
   }
 
   clone () {
-    return new GameState(this.board.map(line => line.slice()), this.currentPlayer);
+    return new GameState(this);
   }
 
   set (x, y, val) {
@@ -73,6 +73,18 @@ class GameState {
 
   hash () {
     return this.board.map(line => line.join('')).join('');
+  }
+
+  toJSON () {
+    return {
+      board: this.board,
+      currentPlayer: this.currentPlayer
+    };
+  }
+
+  fromJSON (obj) {
+    this.board = obj.board.map(line => line.slice());
+    this.currentPlayer = obj.currentPlayer;
   }
 }
 

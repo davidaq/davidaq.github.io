@@ -6,8 +6,8 @@ importScripts('player-ai.js');
 importScripts('selfplay.js');
 
 class WorkerModel extends ConvnetModel {
-  learn (boardState, action, target) {
-    postMessage({ boardState, action, target });
+  learn (state, action, target) {
+    postMessage({ state, action, target });
     return 0;
   }
 }
@@ -16,15 +16,18 @@ const model = new WorkerModel();
 let paused = true;
 
 setTimeout(async () => {
-  const context = {};
+  const playOptions = {
+    rounds: 20,
+    train: true,
+    context: {}
+  };
   while (true) {
     if (paused) {
       await new Promise(r => setTimeout(r, 100));
     } else {
-      const rounds = 10;
-      await startSelfPlay(model, { rounds, train: true, context });
-      postMessage({ play: rounds });
-      await new Promise(r => setTimeout(r, 10));
+      await startSelfPlay(model, playOptions);
+      postMessage({ play: playOptions.rounds });
+      await new Promise(r => setTimeout(r, 1));
     }
   }
 }, 10);
