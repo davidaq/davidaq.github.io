@@ -66,8 +66,8 @@
             const queue = learnQueue.splice(0, 1000);
             let avgError = 0;
             let maxError = 0;
-            for (const { boardState, action, target } of queue) {
-              const error = model.learn(new GameState(boardState), action, target);
+            for (const { state, action, target } of queue) {
+              const error = model.learn(new GameState(state), action, target);
               maxError = Math.max(error, maxError);
               avgError += error / queue.length;
               await idle();

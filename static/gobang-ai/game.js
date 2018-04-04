@@ -12,12 +12,8 @@ class GameState {
       this.fromJSON(from);
     } else {
       this.board = [];
-      const line = [];
-      for (let i = 0; i < BOARD_SIZE; i++) {
-        line.push(EMPTY);
-      }
-      for (let i = 0; i < BOARD_SIZE; i++) {
-        this.board.push(line.slice());
+      for (let i = BOARD_SIZE * BOARD_SIZE; i > 0; i--) {
+        this.board.push(EMPTY);
       }
       this.currentPlayer = BLACK;
     }
@@ -28,18 +24,19 @@ class GameState {
   }
 
   set (x, y, val) {
-    this.board[y][x] = val;
+    this.board[this.coordToAction(x, y)] = val;
   }
 
   get (x, y) {
-    return this.board[y][x];
+    return this.board[this.coordToAction(x, y)];
   }
 
   emptyPos () {
     const ret = [];
+    let i = 0;
     for (let y = 0; y < BOARD_SIZE; y++) {
       for (let x = 0; x < BOARD_SIZE; x++) {
-        switch (this.board[y][x]) {
+        switch (this.board[i++]) {
           case EMPTY:
             ret.push({ x, y });
             break;
@@ -50,16 +47,14 @@ class GameState {
   }
 
   flip () {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      for (let x = 0; x < BOARD_SIZE; x++) {
-        switch (this.board[y][x]) {
-          case WHITE:
-            this.board[y][x] = BLACK;
-            break;
-          case BLACK:
-            this.board[y][x] = WHITE;
-            break;
-        }
+    for (let i = BOARD_SIZE * BOARD_SIZE; i > 0; i--) {
+      switch (this.board[i]) {
+        case WHITE:
+          this.board[i] = BLACK;
+          break;
+        case BLACK:
+          this.board[i] = WHITE;
+          break;
       }
     }
     this.currentPlayer = this.currentPlayer === WHITE ? BLACK : WHITE;
@@ -71,8 +66,12 @@ class GameState {
     return { x, y };
   }
 
+  coordToAction (x, y) {
+    return x + y * BOARD_SIZE;
+  }
+
   hash () {
-    return this.board.map(line => line.join('')).join('');
+    return this.board.join('');
   }
 
   toJSON () {
@@ -83,7 +82,7 @@ class GameState {
   }
 
   fromJSON (obj) {
-    this.board = obj.board.map(line => line.slice());
+    this.board = obj.board.slice();
     this.currentPlayer = obj.currentPlayer;
   }
 }
