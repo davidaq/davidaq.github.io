@@ -14,7 +14,7 @@ class PlayerAI {
   }
 
   decide (state) {
-    this.reward(-0.01);
+    this.reward(-1);
     if (state.currentPlayer === WHITE) {
       state.flip();
     }
@@ -55,11 +55,11 @@ class PlayerAI {
 
   end (state, isWin, isTie) {
     if (isTie) {
-      this.reward(-0.2, true);
+      this.reward(-20, true);
     } else if (isWin) {
-      this.reward(0.2, true);
+      this.reward(20, true);
     } else {
-      this.reward(-0.4, true);
+      this.reward(-40, true);
     }
     this.lastDecision = null;
   }

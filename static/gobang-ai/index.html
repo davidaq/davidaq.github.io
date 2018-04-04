@@ -12,6 +12,7 @@
     <script src="convnet.js"></script>
     <script src="convnet-model.js"></script>
     <script src="player-ai.js"></script>
+    <script src="player-zero.js"></script>
     <script src="player-ui.js"></script>
     <script>
       const model = new ConvnetModel();
@@ -19,7 +20,50 @@
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}
 
-      const ai = new PlayerAI(model, 0, false);
+      //const ai = new PlayerAI(model, 0, false);
+      const pmodel = {
+        predict (state, x, y) {
+          let ret = 0;
+          const check = (x, y) => {
+            const lines = [
+              [1, 0],
+              [0, 1],
+              [1, 1],
+              [1, -1],
+            ];
+            for (let i = 0; i < lines.length; i++) {
+              const [dx, dy] = lines[i];
+              let count = 1;
+              const check = (dir, side) => {
+                const statI = (dir + 1) / 2;
+                for (let j = 1; j < WIN_CONDITION; j++) {
+                  var cx = x - dx * j * dir;
+                  var cy = y - dy * j * dir;
+                  if (cx >= 0 && cx < BOARD_SIZE && cy >= 0 && cy < BOARD_SIZE) {
+                    if (state.get(cx, cy) === BLACK) {
+                      count++;
+                      continue;
+                    }
+                  }
+                  break;
+                }
+              }
+              check(1);
+              check(-1);
+              if (count > ret) {
+                ret = count;
+              }
+            }
+          };
+          check(x, y);
+          if (ret > WIN_CONDITION) {
+            ret = WIN_CONDITION;
+          }
+          return ret / WIN_CONDITION;
+        },
+        learn () {}
+      };
+      const ai = new PlayerZero(pmodel, 0, false);
       const human = new PlayerUI(document.getElementById('gameboard'));
       window.game = new Game(ai, human);
       game.play();

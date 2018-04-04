@@ -114,7 +114,6 @@ class Game {
   }
 
   checkWin (x, y) {
-    this.suggest = null;
     const lines = [
       [1, 0],
       [0, 1],
