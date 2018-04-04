@@ -142,14 +142,14 @@ class Game {
       check(-1);
       if (count >= WIN_CONDITION) {
         this.win = this.currentPlayer;
-        this.players[BLACK].end(this.state, this.currentPlayer === BLACK);
-        this.players[WHITE].end(this.state, this.currentPlayer === WHITE);
+        this.players[BLACK].end(this.state, this.currentPlayer === BLACK, false);
+        this.players[WHITE].end(this.state, this.currentPlayer === WHITE, false);
         return true;
       }
     }
     if (this.remainRound === 0) {
-      this.players[BLACK].end(this.state, false);
-      this.players[WHITE].end(this.state, false);
+      this.players[BLACK].end(this.state, false, true);
+      this.players[WHITE].end(this.state, false, true);
       return true;
     }
     return false

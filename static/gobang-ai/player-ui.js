@@ -84,20 +84,20 @@ class PlayerUI {
     this.$dom = $dom;
   }
 
-  decide (game) {
+  decide (state) {
     return new Promise(resolve => {
-      displayUI(this.$dom, game.board, (x, y) => {
-        resolve([x, y]);
+      displayUI(this.$dom, state, (x, y) => {
+        resolve({ x, y });
       });
     });
   }
 
-  end (game, result) {
-    displayUI(this.$dom, game.board);
+  end (state, isWin, isTie) {
+    displayUI(this.$dom, state);
     setTimeout(() => {
-      if (result === TIE) alert('平局');
-      if (result === BLACK) alert('黑子赢');
-      if (result === WHITE) alert('白子赢');
-    }, 10);
+      if (isTie) alert('平局');
+      if (isWin) alert('赢');
+      else alert('输');
+    }, 100);
   }
 }

@@ -11,12 +11,10 @@
     <script src="game.js"></script>
     <script src="convnet.js"></script>
     <script src="convnet-model.js"></script>
-    <script src="map-model.js"></script>
     <script src="player-ai.js"></script>
     <script src="player-ui.js"></script>
     <script>
       const model = new ConvnetModel();
-      // const model = new MapModel();
       try {
         model.fromJSON(JSON.parse(localStorage.goBangCore));
       } catch (err) {}

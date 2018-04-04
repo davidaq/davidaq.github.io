@@ -53,8 +53,10 @@ class PlayerAI {
     return Promise.resolve({ x, y });
   }
 
-  end (state, isWin) {
-    if (isWin) {
+  end (state, isWin, isTie) {
+    if (isTie) {
+      this.reward(-0.2, true);
+    } else if (isWin) {
       this.reward(0.2, true);
     } else {
       this.reward(-0.4, true);
