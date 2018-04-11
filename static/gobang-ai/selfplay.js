@@ -2,7 +2,7 @@
 async function startSelfPlay (model, options = {}) {
   const {
     rounds = 10,
-    randomness = [0.1, (Math.random() * 0.5 + 0.2).toFixed(1) - 0],
+    randomness = [0, Math.random() * 0.1],
     train = false,
     context = {},
   } = options;

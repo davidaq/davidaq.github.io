@@ -17,7 +17,7 @@ let paused = true;
 
 setTimeout(async () => {
   const playOptions = {
-    rounds: 20,
+    rounds: 1,
     train: true,
     context: {}
   };
@@ -27,7 +27,7 @@ setTimeout(async () => {
     } else {
       await startSelfPlay(model, playOptions);
       postMessage({ play: playOptions.rounds });
-      await new Promise(r => setTimeout(r, 1));
+      await idle();
     }
   }
 }, 10);
@@ -41,4 +41,13 @@ onmessage = async (e) => {
 }
 
 postMessage({ ready: true });
+
+let prevIdleTime = Date.now();
+async function idle () {
+  const now = Date.now()
+  if (now - prevIdleTime > 100) {
+    prevIdleTime = now;
+    await new Promise(r => setTimeout(r, 10));
+  }
+}
 

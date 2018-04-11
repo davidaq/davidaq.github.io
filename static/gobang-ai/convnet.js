@@ -1051,6 +1051,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
     this.out_sx = opt.in_sx;
     this.out_sy = opt.in_sy;
     this.out_depth = opt.in_depth;
+    this.leak = typeof opt.leak !== 'undefined' ? opt.leak : 0;
     this.layer_type = 'relu';
   }
   ReluLayer.prototype = {
@@ -1060,7 +1061,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       var N = V.w.length;
       var V2w = V2.w;
       for(var i=0;i<N;i++) { 
-        if(V2w[i] < 0) V2w[i] = 0; // threshold at 0
+        if(V2w[i] < 0) V2w[i] *= this.leak; // threshold at 0
       }
       this.out_act = V2;
       return this.out_act;
@@ -1071,7 +1072,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       var N = V.w.length;
       V.dw = global.zeros(N); // zero out gradient wrt data
       for(var i=0;i<N;i++) {
-        if(V2.w[i] <= 0) V.dw[i] = 0; // threshold
+        if(V2.w[i] <= 0) V.dw[i] = this.leak * V2.dw[i]; // threshold
         else V.dw[i] = V2.dw[i];
       }
     },
@@ -1569,6 +1570,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
 
           if(typeof def.activation !== 'undefined') {
             if(def.activation==='relu') { new_defs.push({type:'relu'}); }
+            else if(def.activation==='leaky-relu') { new_defs.push({type:'relu', leak:0.01}); }
             else if (def.activation==='sigmoid') { new_defs.push({type:'sigmoid'}); }
             else if (def.activation==='tanh') { new_defs.push({type:'tanh'}); }
             else if (def.activation==='maxout') {

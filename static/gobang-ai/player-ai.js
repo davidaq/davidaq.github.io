@@ -95,17 +95,18 @@ class PlayerAI {
       const opponentPrediction = this.model.predict(stateForOpponent);
       const opponentBestAction = this.bestPossibleAction(stateForOpponent, opponentPrediction);
       if (opponentBestAction > -1) {
-        const { x: mx, y: my } = state.actionToCoord(action);
-        const { x: ox, y: oy } = state.actionToCoord(opponentBestAction);
-        state.set(mx, my, BLACK);
-        state.set(ox, oy, WHITE);
-        const futurePrediction = this.model.predict(state);
-        const futureBestAction = this.bestPossibleAction(state, futurePrediction);
-        if (futureBestAction > -1) {
-          qmax += this.gamma * futurePrediction[futureBestAction];
-        }
-        state.set(mx, my, EMPTY);
-        state.set(ox, oy, EMPTY);
+        qmax -= this.gamma * opponentPrediction[opponentBestAction];
+        //const { x: mx, y: my } = state.actionToCoord(action);
+        //const { x: ox, y: oy } = state.actionToCoord(opponentBestAction);
+        //state.set(mx, my, BLACK);
+        //state.set(ox, oy, WHITE);
+        //const futurePrediction = this.model.predict(state);
+        //const futureBestAction = this.bestPossibleAction(state, futurePrediction);
+        //if (futureBestAction > -1) {
+        //  qmax += this.gamma * futurePrediction[futureBestAction];
+        //}
+        //state.set(mx, my, EMPTY);
+        //state.set(ox, oy, EMPTY);
       }
     }
     this.model.learn(state, action, qmax);
@@ -113,17 +114,13 @@ class PlayerAI {
 
   bestPossibleAction (state, values) {
     let best = -1;
-    let action = -1;
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      for (let x = 0; x < BOARD_SIZE; x++) {
-        action++;
-        if (state.get(x, y) === EMPTY) {
-          if (best === -1 || values[action] > values[best]) {
-            best = action;
-          }
+    state.forEach((val, x, y, action) => {
+      if (state.get(x, y) === EMPTY) {
+        if (best === -1 || values[action] > values[best]) {
+          best = action;
         }
       }
-    }
+    });
     return best;
   }
   

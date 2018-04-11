@@ -20,9 +20,10 @@
     <script src="player-ui.js"></script>
     <script src="selfplay.js"></script>
     <script>
-      const WORKER_COUNT = 3;
+      const WORKER_COUNT = 4;
       const learnQueue = [];
       const workers = [];
+      let opa = 0.4;
       let playedGames = 0;
       let waitingWorkers = WORKER_COUNT;
       let allWorkersReady;
@@ -49,7 +50,7 @@
       }
       const model = new ConvnetModel();
       try {
-        model.fromJSON(JSON.parse(localStorage.goBangCore));
+        model.fromJSON(JSON.parse(localStorage.goBangCore2));
       } catch (err) {}
 
       workersReady.then(async () => {
@@ -58,30 +59,32 @@
           await idle();
           broadcast({ pause: learnQueue.length > 2000 });
           if (learnQueue.length < 1000) {
-            await new Promise(r => setTimeout(r, 10));
+            await new Promise(r => setTimeout(r, 30));
           } else {
             const queue = learnQueue.splice(0, 1000);
             let avgError = 0;
             let maxError = 0;
+            const gstate = new GameState();
             for (const { state, action, target } of queue) {
-              const error = model.learn(new GameState(state), action, target);
+              gstate.fromJSON(state);
+              const error = model.learn(gstate, action, target);
               maxError = Math.max(error, maxError);
               avgError += error / queue.length;
               await idle();
             }
 
-            const { wins, game } = await startSelfPlay(model);
+            const { wins, game } = await startSelfPlay(model, { randomness: [0, opa] });
             console.log(
               'plays:', playedGames,
-              'pending:', learnQueue.length,
               'avgErr:', avgError.toFixed(3) - 0,
               'maxErr:', maxError.toFixed(3) - 0,
-              'wins:', wins
+              'wins:', wins,
+              'pending:', learnQueue.length,
             );
             displayUI(document.getElementById('gameboard'), game.state);
             const modelJson = model.toJSON();
             broadcast({ model: modelJson });
-            localStorage.goBangCore = JSON.stringify(modelJson);
+            localStorage.goBangCore2 = JSON.stringify(modelJson);
           }
         }
       });

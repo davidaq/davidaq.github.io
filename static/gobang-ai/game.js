@@ -31,6 +31,16 @@ class GameState {
     return this.board[this.coordToAction(x, y)];
   }
 
+  forEach (cb) {
+    let i = 0;
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        cb(this.board[i], x, y, i);
+        i++;
+      }
+    }
+  }
+
   emptyPos () {
     const ret = [];
     let i = 0;
