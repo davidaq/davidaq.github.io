@@ -10,6 +10,7 @@
     <div id="gameboard"></div>
     <script src="game.js"></script>
     <script src="convnet.js"></script>
+    <script src="mcts.js"></script>
     <script src="convnet-model.js"></script>
     <script src="player-ai.js"></script>
     <script src="player-zero.js"></script>
@@ -34,6 +35,7 @@
             for (let i = 0; i < lines.length; i++) {
               const [dx, dy] = lines[i];
               let count = 1;
+              let free = 0;
               const check = (dir, side) => {
                 const statI = (dir + 1) / 2;
                 for (let j = 1; j < WIN_CONDITION; j++) {
@@ -43,6 +45,8 @@
                     if (state.get(cx, cy) === BLACK) {
                       count++;
                       continue;
+                    } else if (state.get(cx, cy) === EMPTY) {
+                      free++;
                     }
                   }
                   break;
@@ -50,6 +54,7 @@
               }
               check(1);
               check(-1);
+              count += free / 2;
               if (count > ret) {
                 ret = count;
               }

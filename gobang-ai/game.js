@@ -31,6 +31,10 @@ class GameState {
     return this.board[this.coordToAction(x, y)];
   }
 
+  exchangePlayer () {
+    this.currentPlayer = this.currentPlayer === WHITE ? BLACK : WHITE;
+  }
+
   forEach (cb) {
     let i = 0;
     for (let y = 0; y < BOARD_SIZE; y++) {
@@ -67,7 +71,7 @@ class GameState {
           break;
       }
     }
-    this.currentPlayer = this.currentPlayer === WHITE ? BLACK : WHITE;
+    this.exchangePlayer();
   }
 
   actionToCoord (action) {
